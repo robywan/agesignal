@@ -1,0 +1,6 @@
+services:
+  web:
+    environment:
+      - SSH_AUTH_SOCK=/home/.ssh-agent/host/agent.sock
+    volumes:
+      - '~/.ssh:/home/.ssh-agent/host:ro'
