@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+cd $DDEV_APPROOT
+laravel new --database=$DDEV_DATABASE_FAMILY -- .
