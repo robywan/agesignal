@@ -1,0 +1,23 @@
+ENV PHP="/usr/bin/php${DDEV_PHP_VERSION}"
+ENV PHP_CONFIG="/usr/bin/php-config${DDEV_PHP_VERSION}"
+
+RUN --mount=type=cache,sharing=locked,target=/var/lib/apt \
+    --mount=type=cache,sharing=locked,target=/var/cache/apt \
+    apt-get -y update \
+    && apt-get -y install gcc make autoconf libtool bison re2c pkg-config php-dev clang libclang-dev cmake git curl \
+    && apt-get clean
+
+RUN --mount=type=cache,sharing=locked,target=/tmp/kreuzberg/target \
+    --mount=type=cache,sharing=locked,target=/root/.cargo/registry \
+    --mount=type=cache,sharing=locked,target=/root/.cargo/git \
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > /tmp/rustup.sh \
+    && sh /tmp/rustup.sh -y \
+    && source "/root/.cargo/env" \
+    && git clone --depth 1 --no-checkout --branch v4.2.4 https://github.com/kreuzberg-dev/kreuzberg.git /tmp/kreuzberg-repo \
+    && mv /tmp/kreuzberg-repo/.git /tmp/kreuzberg \
+    && cd /tmp/kreuzberg \
+    && git reset --hard HEAD \
+    && cd /tmp/kreuzberg/crates/kreuzberg-php \
+    && cargo build --release -p kreuzberg-php \
+    && cp ../../target/release/libkreuzberg_php.so $(php-config8.4 --extension-dir)/kreuzberg_php.so \
+    && printf "; priority=25\nextension=kreuzberg_php.so\n" | tee $(php-config8.4 --ini-dir)/25-kreuzberg_php.ini
