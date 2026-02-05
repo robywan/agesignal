@@ -1,0 +1,12 @@
+parameters:
+    level: max
+    paths:
+        - src
+    scanFiles:
+        - stubs/kreuzberg_extension.php
+    treatPhpDocTypesAsCertain: false
+    ignoreErrors:
+        - message: '#Cannot cast mixed to#'
+          path: 'src/Types/Metadata/HtmlMetadata.php'
+        - message: '#expects.*mixed#'
+          path: 'src/Types/Metadata/HtmlMetadata.php'
