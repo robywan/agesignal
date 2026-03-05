@@ -15,6 +15,8 @@ class LabTestResult extends Model
         'reference_values',
         'notes',
         'loinc_num',
+        'loinc_justification',
+        'loinc_confidence_score',
     ];
 
     public function table(): BelongsTo

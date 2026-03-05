@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\LabTestDocuments\Resources\LabTestTables\RelationManagers;
 
+use App\Jobs\ClassifyLabTestResultJob;
+use Filament\Actions\Action;
 use Filament\Actions\AssociateAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
@@ -16,6 +18,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -108,6 +111,13 @@ class ResultsRelationManager extends RelationManager
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
+                Action::make('classify')
+                    ->label('Classifica LOINC')
+                    ->icon(Heroicon::OutlinedSparkles)
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->action(fn ($record) => ClassifyLabTestResultJob::dispatch($record))
+                    ->successNotificationTitle('Classificazione avviata'),
                 DissociateAction::make(),
                 DeleteAction::make(),
             ])
