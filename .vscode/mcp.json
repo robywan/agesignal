@@ -1,0 +1,11 @@
+{
+    "servers": {
+        "laravel-boost": {
+            "command": "ddev",
+            "args": [
+                "artisan",
+                "boost:mcp"
+            ]
+        }
+    }
+}
