@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class LabTestResult extends Model
 {
@@ -13,10 +14,24 @@ class LabTestResult extends Model
         'unit_measure',
         'reference_values',
         'notes',
+        'loinc_num',
     ];
 
     public function table(): BelongsTo
     {
         return $this->belongsTo(LabTestTable::class, 'table_id');
+    }
+
+    public function loincCoreEntry(): BelongsTo
+    {
+        return $this->belongsTo(LoincCoreEntry::class, 'loinc_num', 'loinc_num');
+    }
+
+    /**
+     * @return MorphMany<AiUsage>
+     */
+    public function aiUsages(): MorphMany
+    {
+        return $this->morphMany(AiUsage::class, 'subject');
     }
 }

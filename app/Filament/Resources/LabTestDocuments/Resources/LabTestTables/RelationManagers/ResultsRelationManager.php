@@ -78,6 +78,17 @@ class ResultsRelationManager extends RelationManager
                     ->searchable(),
                 TextColumn::make('reference_values')
                     ->searchable(),
+                TextColumn::make('loinc_num')
+                    ->label('LOINC')
+                    ->searchable()
+                    ->placeholder('-')
+                    ->toggleable(),
+                TextColumn::make('loincCoreEntry.long_common_name')
+                    ->label('LOINC Description')
+                    ->searchable()
+                    ->placeholder('-')
+                    ->toggleable()
+                    ->wrap(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
