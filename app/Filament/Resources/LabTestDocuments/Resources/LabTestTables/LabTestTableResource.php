@@ -6,7 +6,6 @@ use App\Filament\Resources\LabTestDocuments\LabTestDocumentResource;
 use App\Filament\Resources\LabTestDocuments\Resources\LabTestTables\Pages\CreateLabTestTable;
 use App\Filament\Resources\LabTestDocuments\Resources\LabTestTables\Pages\EditLabTestTable;
 use App\Filament\Resources\LabTestDocuments\Resources\LabTestTables\Pages\ViewLabTestTable;
-use App\Filament\Resources\LabTestDocuments\Resources\LabTestTables\RelationManagers\RequestsRelationManager;
 use App\Filament\Resources\LabTestDocuments\Resources\LabTestTables\RelationManagers\ResultsRelationManager;
 use App\Filament\Resources\LabTestDocuments\Resources\LabTestTables\Schemas\LabTestTableForm;
 use App\Filament\Resources\LabTestDocuments\Resources\LabTestTables\Schemas\LabTestTableInfolist;
@@ -53,7 +52,6 @@ class LabTestTableResource extends Resource
     {
         return [
             ResultsRelationManager::class,
-            RequestsRelationManager::class,
         ];
     }
 

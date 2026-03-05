@@ -11,9 +11,8 @@ use Filament\Actions\DissociateAction;
 use Filament\Actions\DissociateBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
@@ -28,9 +27,6 @@ class ResultsRelationManager extends RelationManager
     {
         return $schema
             ->components([
-                Select::make('request_id')
-                    ->relationship('request', 'id')
-                    ->required(),
                 TextInput::make('name')
                     ->default(null),
                 TextInput::make('value')
@@ -49,8 +45,6 @@ class ResultsRelationManager extends RelationManager
     {
         return $schema
             ->components([
-                TextEntry::make('request.id')
-                    ->label('Request'),
                 TextEntry::make('name')
                     ->placeholder('-'),
                 TextEntry::make('value')

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class LabTestTable extends Model
@@ -16,7 +16,7 @@ class LabTestTable extends Model
         'media_id',
         'page_number',
         'markdown',
-        'cells'
+        'cells',
     ];
 
     protected function casts()
@@ -30,7 +30,7 @@ class LabTestTable extends Model
     protected function title(): Attribute
     {
         return Attribute::get(
-            fn () => 'Tabella pagina ' . $this->page_number
+            fn () => 'Tabella pagina '.$this->page_number
         );
     }
 
@@ -45,18 +45,18 @@ class LabTestTable extends Model
     }
 
     /**
-     * @return HasMany<LabTestResultRequest>
+     * @return HasMany<LabTestResult>
      */
-    public function requests(): HasMany
+    public function results(): HasMany
     {
-        return $this->hasMany(LabTestResultRequest::class, 'table_id');
+        return $this->hasMany(LabTestResult::class, 'table_id');
     }
 
     /**
-     * @return HasManyThrough<LabTestResult>
+     * @return MorphMany<AiUsage>
      */
-    public function results(): HasManyThrough
+    public function aiUsages(): MorphMany
     {
-        return $this->hasManyThrough(LabTestResult::class, LabTestResultRequest::class, 'table_id', 'request_id');
+        return $this->morphMany(AiUsage::class, 'subject');
     }
 }

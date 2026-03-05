@@ -12,11 +12,11 @@ class LabTestResult extends Model
         'value',
         'unit_measure',
         'reference_values',
-        'notes'
+        'notes',
     ];
 
-    public function request(): BelongsTo
+    public function table(): BelongsTo
     {
-        return $this->belongsTo(LabTestResultRequest::class, 'request_id');
+        return $this->belongsTo(LabTestTable::class, 'table_id');
     }
 }

@@ -3,7 +3,6 @@
 namespace App\Jobs;
 
 use App\Enums\LabTestResultRequestStatus;
-use App\Models\LabTestResultRequest;
 use App\Models\LabTestTable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -24,7 +23,7 @@ class ProcessDocumentTable implements ShouldQueue
      */
     public function __construct(
         protected LabTestTable $labTestTable
-    ) { }
+    ) {}
 
     /**
      * Execute the job.
@@ -32,7 +31,7 @@ class ProcessDocumentTable implements ShouldQueue
     public function handle(): void
     {
         $schema = $this->schema();
-    
+
         $response = Prism::structured()
             ->using(Provider::Gemini, 'gemini-3-flash-preview')
             ->withMaxTokens(6000)
@@ -45,29 +44,36 @@ class ProcessDocumentTable implements ShouldQueue
             ])
             ->asStructured();
 
-        /** @var LabTestResultRequest */
-        $request = $this->labTestTable->requests()->create([
+        Collection::make($response->structured['results'])
+            ->each(function ($item) {
+                $this->labTestTable->results()->create([
+                    'name' => $item['name'] ?? null,
+                    'value' => $item['value'] ?? null,
+                    'unit_measure' => $item['unit_measure'] ?? null,
+                    'reference_values' => $item['reference_values'] ?? null,
+                    'notes' => $item['notes'] ?? null,
+                ]);
+            });
+
+        $this->labTestTable
+            ->forceFill(['request_status' => LabTestResultRequestStatus::Completed])
+            ->save();
+
+        $this->labTestTable->aiUsages()->create([
             'prompt_tokens' => $response->usage->promptTokens,
             'completion_tokens' => $response->usage->completionTokens,
             'thought_tokens' => $response->usage->thoughtTokens,
             'cache_read_input_tokens' => $response->usage->cacheReadInputTokens,
             'cache_write_input_tokens' => $response->usage->cacheWriteInputTokens,
+            'prompt_token_cost' => 0,
+            'completion_token_cost' => 0,
+            'thought_token_cost' => 0,
+            'cache_read_token_cost' => 0,
+            'cache_write_token_cost' => 0,
+            'provider' => Provider::Gemini,
+            'model' => $response->meta->model,
+            'description' => 'Processamento tabella analisi del sangue',
         ]);
-
-        Collection::make($response->structured['results'])
-            ->each(function ($item) use ($request) {
-                $request->results()->create([
-                    'name' => $item['name'] ?? null,
-                    'value' => $item['value'] ?? null,
-                    'unit_measure' => $item['unit_measure'] ?? null,
-                    'reference_values' => $item['reference_values'] ?? null,
-                    'notes' => $item['notes'] ?? null
-                ]);
-            });
-        
-        $this->labTestTable
-            ->forceFill(['request_status' => LabTestResultRequestStatus::Completed])
-            ->save();
     }
 
     protected function schema(): ObjectSchema
