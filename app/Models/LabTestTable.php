@@ -17,6 +17,7 @@ class LabTestTable extends Model
         'page_number',
         'markdown',
         'cells',
+        'request_status',
     ];
 
     protected function casts()

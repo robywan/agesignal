@@ -2,6 +2,8 @@
 
 namespace App\Actions;
 
+use App\Enums\LabTestResultLoincStatus;
+use App\Models\AiModelPricing;
 use App\Models\LabTestResult;
 use App\Prisma\Tools\SearchLoincCodeTool;
 use Illuminate\Support\Collection;
@@ -13,17 +15,17 @@ use Prism\Prism\Schema\ObjectSchema;
 use Prism\Prism\Schema\StringSchema;
 use Prism\Prism\Structured\Response;
 
-class ClassifyLabTestAction
+class ClassifyLabTestResultAction
 {
-    public function __invoke(LabTestResult $labTestResult): Response
+    public function __invoke(LabTestResult $testResult): Response
     {
         $response = Prism::structured()
-            ->using(Provider::Gemini, 'gemini-flash-latest')
-            ->withMaxTokens(6000)
+            ->using(Provider::Gemini, 'gemini-3.1-flash-lite-preview')
+            ->withMaxTokens(10000)
             ->withClientOptions(['timeout' => 300]) // Adjust request timeout
             ->withClientRetry(2, 1000) // Add automatic retries
             ->withSystemPrompt(<<<'INSTRUCTIONS'
-                Agisci come un esperto di codifica medica LOINC. 
+                Agisci come un esperto di codifica medica LOINC.
                 Il tuo unico obiettivo è mappare i nomi degli esami presenti nella tabella Markdown ai codici LOINC ufficiali utilizzando il tool 'search_loinc_code'.
 
                 PROCEDURA:
@@ -37,7 +39,7 @@ class ClassifyLabTestAction
                 5. Nel campo 'justification', spiega brevemente la logica (es: "Selezionato 2339-0 perché corrisponde a Glucosio nel sangue con unità di misura mg/dL").
                 INSTRUCTIONS)
                 // CONTESTO: [Analisi del Sangue / Analisi delle Feci]
-            ->withMaxSteps(10) // Necessario minimo 2 per poter utilizzare il tool
+            ->withMaxSteps(30) // Necessario minimo 2 per poter utilizzare il tool
             ->withTools([
                 SearchLoincCodeTool::make(),
             ])
@@ -56,12 +58,12 @@ class ClassifyLabTestAction
                     requiredFields: ['original_name', 'loinc_code', 'justification']
                 )
             ))
-            ->withPrompt(Collection::make($labTestResult)
+            ->withPrompt(Collection::make($testResult)
                 ->only(['name', 'unit_measure', 'value', 'reference_values', 'notes'])
                 ->toJson())
             ->asStructured();
 
-        $labTestResult->aiUsages()->create([
+        $usageData = [
             'provider' => Provider::Gemini,
             'model' => $response->meta->model,
             'description' => 'Classificazione esame',
@@ -70,12 +72,42 @@ class ClassifyLabTestAction
             'thought_tokens' => $response->usage->thoughtTokens,
             'cache_read_input_tokens' => $response->usage->cacheReadInputTokens,
             'cache_write_input_tokens' => $response->usage->cacheWriteInputTokens,
-            'prompt_token_cost' => 0,
-            'completion_token_cost' => 0,
-            'thought_token_cost' => 0,
-            'cache_read_token_cost' => 0,
-            'cache_write_token_cost' => 0,
-        ]);
+        ];
+
+        $apiModelPricing = AiModelPricing::query()
+            ->forModel(Provider::Gemini, $response->meta->model)
+            ->first();
+
+        if ($apiModelPricing) {
+            $usageData = [ 
+                ...$usageData, 
+                ...[
+                    'prompt_token_cost' => $apiModelPricing->prompt_token_price,
+                    'completion_token_cost' => $apiModelPricing->completion_token_price,
+                    'thought_token_cost' => $apiModelPricing->thought_token_price,
+                    'cache_read_token_cost' => $apiModelPricing->cache_read_token_price,
+                    'cache_write_token_cost' => $apiModelPricing->cache_write_token_price,
+                ]
+            ];
+        }
+
+        $testResult->aiUsages()->create($usageData);
+
+        $result = new Collection($response->structured ?? [])
+            ->first();
+
+        if ($result && ! empty($result['loinc_code'])) {
+            $testResult->update([
+                'loinc_num' => $result['loinc_code'],
+                'loinc_status' => LabTestResultLoincStatus::Mapped,
+                'loinc_justification' => $result['justification'] ?? null,
+                'loinc_confidence_score' => $result['confidence_score'] ?? null,
+            ]);
+        } else {
+            $testResult->update([
+                'loinc_status' => LabTestResultLoincStatus::Unmapped
+            ]);
+        }
 
         return $response;
     }

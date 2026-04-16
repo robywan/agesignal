@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+## #ddev-generated: If you want to edit and own this file, remove this line.
+## Description: Launch a browser with Dbgate
+## Usage: dbgate
+## Example: "ddev dbgate"
+
+DDEV_DBGATE_PORT=8048
+DDEV_DBGATE_HTTPS_PORT=8049
+SUBDOMAIN="dbgate"
+
+# Construct the full URL using DDEV variables
+if [ "${DDEV_PRIMARY_URL%://*}" = "http" ] || [ -n "${GITPOD_WORKSPACE_ID:-}" ] || [ "${CODESPACES:-}" = "true" ]; then
+    URL="http://${SUBDOMAIN}.${DDEV_SITENAME}.${DDEV_TLD}:${DDEV_DBGATE_PORT}"
+    
+    # Gitpod: "gp preview" opens a blank page for Dbgate, use "xdg-open" instead
+    if [ "${OSTYPE:-}" = "linux-gnu" ] && [ -n "${GITPOD_WORKSPACE_ID:-}" ] && [ -z "${DDEV_DEBUG:-}" ]; then
+        xdg-open "$(DDEV_DEBUG=true ddev launch "$URL" | grep "FULLURL" | awk '{print $2}')"
+    else
+        ddev launch "$URL"
+    fi
+else
+    URL="https://${SUBDOMAIN}.${DDEV_SITENAME}.${DDEV_TLD}:${DDEV_DBGATE_HTTPS_PORT}"
+    ddev launch "$URL"
+fi

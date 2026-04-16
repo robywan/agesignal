@@ -80,6 +80,7 @@ class ResultsRelationManager extends RelationManager
                 TextColumn::make('unit_measure')
                     ->searchable(),
                 TextColumn::make('reference_values')
+                    ->label('Reference Values')
                     ->searchable(),
                 TextColumn::make('loinc_num')
                     ->label('LOINC')

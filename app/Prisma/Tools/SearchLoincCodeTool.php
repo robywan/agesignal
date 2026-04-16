@@ -40,6 +40,33 @@ class SearchLoincCodeTool
                     // ->where('component', 'like', "%$component%")
                     // ->where('system', 'like', "%$system%")
 
+                    // 1. Esclusione dei ^
+                    /*
+                    ->where('system', 'NOT LIKE', '%^%')
+                    */
+
+                    // 2. Inclusione Sistemi Base o con +
+                    /*
+                    ->where(function ($query) {
+                        $query->whereIn('system', ['Ser/Plas', 'Bld', 'Urine', 'Stool', 'Ser', 'Plas', 'Bld.dot', 'Urine sed'])
+                            ->orWhere('system', 'LIKE', '%+Ser/Plas%')->orWhere('system', 'LIKE', 'Ser/Plas+%')
+                            ->orWhere('system', 'LIKE', '%+Bld%')->orWhere('system', 'LIKE', 'Bld+%')
+                            ->orWhere('system', 'LIKE', '%+Urine%')->orWhere('system', 'LIKE', 'Urine+%')
+                            ->orWhere('system', 'LIKE', '%+Stool%')->orWhere('system', 'LIKE', 'Stool+%')
+                            ->orWhere('system', 'LIKE', '%+Ser%')->orWhere('system', 'LIKE', 'Ser+%')
+                            ->orWhere('system', 'LIKE', '%+Plas%')->orWhere('system', 'LIKE', 'Plas+%');
+                    })
+                    */
+                    // 3. Whitelist delle Classi di Laboratorio
+                    /*
+                    ->whereIn('class', ['CHEM', 'HEM/BC', 'MICRO', 'UA', 'COAG', 'SERO', 'TOX', 'CELLMARK'])
+                    */
+                    
+                    // 4. Rimozione metodi stimati (opzionale ma consigliato per dati grezzi)
+                    /*
+                    ->whereNotIn('method_type', ['Measured.estimated', 'Predicted'])
+                    */
+
                     ->where(fn (Builder $q) => $q
                         ->where('system', $system)
                         ->orWhere('system', 'LIKE', "%{$system}%"))

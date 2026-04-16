@@ -1,0 +1,10 @@
+name: dbgate
+repository: stefpe/ddev-dbgate
+version: 0.0.3
+install_date: "2026-03-26T16:30:43+01:00"
+project_files:
+    - docker-compose.dbgate.yaml
+    - .env.dbgate
+    - commands/host/dbgate
+global_files: []
+removal_actions: []

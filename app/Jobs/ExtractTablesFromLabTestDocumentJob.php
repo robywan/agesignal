@@ -38,5 +38,9 @@ class ExtractTablesFromLabTestDocumentJob implements ShouldQueue
                 ]);
             }
         }
+
+        foreach ($this->labTestDocument->tables as $table) {
+            ProcessDocumentTable::dispatchSync($table);
+        }
     }
 }

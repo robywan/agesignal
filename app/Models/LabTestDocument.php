@@ -47,4 +47,9 @@ class LabTestDocument extends Model implements HasMedia
     {
         return $this->hasMany(LabTestTable::class, 'document_id');
     }
+
+    public function results(): HasManyThrough
+    {
+        return $this->hasManyThrough(LabTestResult::class, LabTestTable::class, 'document_id', 'table_id');
+    }
 }

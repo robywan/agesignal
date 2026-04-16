@@ -2,8 +2,23 @@
     "agents": [
         "copilot"
     ],
-    "editors": [
-        "vscode"
+    "guidelines": true,
+    "mcp": true,
+    "nightwatch_mcp": false,
+    "packages": [
+        "filament/filament",
+        "prism-php/prism",
+        "spatie/laravel-medialibrary"
     ],
-    "guidelines": []
+    "sail": false,
+    "skills": [
+        "fortify-development",
+        "laravel-best-practices",
+        "fluxui-development",
+        "livewire-development",
+        "pest-testing",
+        "tailwindcss-development",
+        "developing-with-prism",
+        "medialibrary-development"
+    ]
 }
