@@ -20,6 +20,11 @@ This application is a Laravel application and its main Laravel ecosystems packag
 - phpunit/phpunit (PHPUNIT) - v12
 - tailwindcss (TAILWINDCSS) - v4
 
+## Development Environment
+- This application's local development environment is DDEV.
+- Prefer running project commands through DDEV when applicable, for example `ddev artisan`, `ddev composer`, `ddev npm`, and `ddev php`.
+- If you provide the user with commands to run locally for this project, default to the DDEV form unless the user explicitly asks otherwise.
+
 ## Conventions
 - You must follow all existing code conventions used in this application. When creating or editing a file, check sibling files for the correct structure, approach, and naming.
 - Use descriptive names for variables and methods. For example, `isRegisteredForDiscounts`, not `discount()`.
