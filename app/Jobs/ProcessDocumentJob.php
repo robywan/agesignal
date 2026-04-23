@@ -2,13 +2,11 @@
 
 namespace App\Jobs;
 
-use App\Actions\ClassifyLabTestResultAction;
-use App\Actions\ExtractLabTestResults;
 use App\Actions\ExtractLabTestTables;
+use App\Enums\LabTestDocumentStatus;
 use App\Models\LabTestDocument;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Symfony\Component\Process\Process;
 
 class ProcessDocumentJob implements ShouldQueue
 {
@@ -24,7 +22,17 @@ class ProcessDocumentJob implements ShouldQueue
     public function handle(
         ExtractLabTestTables $extractTablesAction
     ): void {
+        $this->document->update([
+            'status' => LabTestDocumentStatus::Pending,
+        ]);
+
         $tables = $extractTablesAction($this->document);
+
+        if ($tables->isNotEmpty()) {
+            $this->document->update([
+                'status' => LabTestDocumentStatus::Extracted,
+            ]);
+        }
 
         foreach ($tables as $table) {
             ProcessDocumentTable::dispatch($table);

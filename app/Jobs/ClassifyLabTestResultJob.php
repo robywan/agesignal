@@ -31,7 +31,7 @@ class ClassifyLabTestResultJob implements ShouldQueue, ShouldBeUnique
 
     public function retryUntil(): DateTime
     {
-        return now()->plus(minutes: 10);
+        return now()->addMinutes(10)->toDateTime();
     }
 
     /* public function backoff(): array

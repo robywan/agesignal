@@ -11,9 +11,19 @@
             </flux:sidebar.header>
 
             <flux:sidebar.nav>
+                <flux:sidebar.item icon="document-plus" :href="route('documents.create')" :current="request()->routeIs('documents.create')" wire:navigate>
+                    {{ __('Nuovo referto') }}
+                </flux:sidebar.item>
+            </flux:sidebar.nav>
+
+            <flux:sidebar.nav>
                 <flux:sidebar.group :heading="__('Platform')" class="grid">
                     <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard') }}
+                    </flux:sidebar.item>
+
+                    <flux:sidebar.item icon="document-text" :href="route('documents.index')" :current="request()->routeIs('documents.index')" wire:navigate>
+                        {{ __('Referti') }}
                     </flux:sidebar.item>
                 </flux:sidebar.group>
             </flux:sidebar.nav>

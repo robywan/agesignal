@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\LabTestDocumentStatus;
+use App\Enums\LabTestResultRequestStatus;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,13 +18,15 @@ class LabTestDocument extends Model implements HasMedia
 
     protected $fillable = [
         'owner_user_id',
-        'test_date'
+        'test_date',
+        'status',
     ];
 
-    protected function casts()
+    protected function casts(): array
     {
         return [
-            'test_date' => 'immutable_date'
+            'test_date' => 'immutable_date',
+            'status' => LabTestDocumentStatus::class,
         ];
     }
 
@@ -34,8 +38,28 @@ class LabTestDocument extends Model implements HasMedia
     public function name(): Attribute
     {
         return Attribute::get(
-            fn () => $this->test_date ? 'Test di laboratorio del ' . $this->test_date->format('Y-m-d') : 'Test di laboratorio'
+            fn () => $this->test_date ? 'Test di laboratorio del '.$this->test_date->format('Y-m-d') : 'Test di laboratorio'
         );
+    }
+
+    public function syncStatusFromTables(): void
+    {
+        if (! $this->tables()->exists()) {
+            return;
+        }
+
+        $hasPendingTables = $this->tables()
+            ->whereIn('request_status', [
+                LabTestResultRequestStatus::Pending->value,
+                LabTestResultRequestStatus::Processing->value,
+            ])
+            ->exists();
+
+        $this->update([
+            'status' => $hasPendingTables
+                ? LabTestDocumentStatus::Extracted
+                : LabTestDocumentStatus::Parsed,
+        ]);
     }
 
     public function owner(): BelongsTo
