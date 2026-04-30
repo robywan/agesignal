@@ -12,9 +12,12 @@ class ProcessDocumentJob implements ShouldQueue
 {
     use Queueable;
 
-    /**
-     * Create a new job instance.
-     */
+    public int $tries = 3;
+
+    public int $timeout = 300;
+
+    public int $backoff = 30;
+
     public function __construct(
         protected LabTestDocument $document
     ) {}

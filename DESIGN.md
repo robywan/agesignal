@@ -1,256 +1,243 @@
 ---
-name: AgeSignal
-description: Personal health dashboard for end patients. Monitors lab analysis results, visualizes health trends, and communicates medical data in plain human language. Design philosophy — reassure first, inform second. Never alarm unnecessarily.
-version: 0.1
-
-colors:
-  # Page & surfaces
-  page-bg:       "#f0f4f8"
-  surface-card:  "#ffffff"
-  surface-dark:  "#060d1a"
-  surface-muted: "#f5f7f9"
-
-  # Brand blue
-  blue-primary:  "#005cb6"
-  blue-light:    "#B5D4F4"
-  blue-deep:     "#0C447C"
-  blue-wire:     "#1e5fa0"
-  blue-glow:     "#2d8fe0"
-
-  # Status semantic — these colors encode health meaning, never use decoratively
-  status-ok:       "#1D9E75"
-  status-ok-bg:    "#EAF3DE"
-  status-ok-text:  "#3B6D11"
-  status-warn:     "#EF9F27"
-  status-warn-bg:  "#FAEEDA"
-  status-warn-text:"#854F0B"
-  status-low:      "#E24B4A"
-  status-low-bg:   "#FCEBEB"
-  status-low-text: "#791F1F"
-
-  # Neutrals
-  gray-50:  "#f0f4f8"
-  gray-100: "#e2e6ea"
-  gray-200: "#d9dde2"
-  gray-400: "#8c9198"
-  gray-600: "#6b7178"
-  gray-900: "#111922"
-
-  # Aliases
-  primary:        "{colors.blue-primary}"
-  text-primary:   "{colors.gray-900}"
-  text-secondary: "{colors.gray-600}"
-  border-default: "{colors.gray-100}"
-
-typography:
-  display:
-    fontFamily: "Inter, DM Sans, system-ui, sans-serif"
-    fontSize: "2rem"
-    fontWeight: "500"
-  heading:
-    fontFamily: "Inter, DM Sans, system-ui, sans-serif"
-    fontSize: "15px"
-    fontWeight: "500"
-  label:
-    fontFamily: "Inter, DM Sans, system-ui, sans-serif"
-    fontSize: "12px"
-    fontWeight: "500"
-  body:
-    fontFamily: "Inter, DM Sans, system-ui, sans-serif"
-    fontSize: "11px"
-    fontWeight: "400"
-  caption:
-    fontFamily: "Inter, DM Sans, system-ui, sans-serif"
-    fontSize: "10px"
-    fontWeight: "400"
-  score:
-    fontFamily: "Inter, DM Sans, system-ui, sans-serif"
-    fontSize: "36px"
-    fontWeight: "500"
-
-spacing:
-  1:  "4px"
-  2:  "8px"
-  3:  "12px"
-  4:  "16px"
-  5:  "20px"
-  6:  "24px"
-  8:  "32px"
-  10: "40px"
-
-rounded:
-  sm:   "6px"
-  md:   "8px"
-  lg:   "12px"
-  xl:   "16px"
-  full: "9999px"
-
-components:
-  card:
-    backgroundColor: "{colors.surface-card}"
-    borderRadius:    "{rounded.lg}"
-    border:          "0.5px solid {colors.border-default}"
-    padding:         "12px 16px"
-  card-dark:
-    backgroundColor: "{colors.surface-dark}"
-    borderRadius:    "{rounded.lg}"
-    border:          "0.5px solid rgba(255,255,255,0.07)"
-  status-badge:
-    borderRadius: "{rounded.full}"
-    fontSize:     "9px"
-    fontWeight:   "500"
-    padding:      "2px 8px"
-  progress-circle:
-    size:      "64px"
-    trackColor: "{colors.gray-100}"
-    lineWidth:  "5px"
-  gauge:
-    trackColor: "{colors.gray-100}"
-    lineWidth:  "10px"
-  avatar-panel:
-    backgroundColor: "{colors.surface-dark}"
-    wireframeBase:   "{colors.blue-wire}"
-    wireframeGlow:   "{colors.blue-glow}"
-    wireframeOpacity: "0.55"
-  ai-bubble:
-    backgroundColor: "{colors.surface-muted}"
-    borderRadius:    "{rounded.md}"
-    fontSize:        "11px"
-    padding:         "7px 9px"
-  ai-bubble-user:
-    backgroundColor: "{colors.blue-light}"
-    color:           "{colors.blue-deep}"
+name: AgeSignal — Design System
+description: Personal health dashboard for end patients. Visualizes lab test data uploaded by the user as PDF reports — values, reference ranges, classification, and historical trends. The interface is reassuring, plain-language, and grounded strictly in data the application actually ingests.
+version: 0.2
 ---
 
-## Overview
+# Document scope
 
-AgeSignal is a personal health companion — not a clinical tool. The primary user is a non-medical patient who receives lab analysis results and wants to understand what they mean without anxiety. Every design decision must serve two goals: **immediate reassurance** (or a clear, calm alert) and **plain language understanding**.
+This document defines the design system for AgeSignal: visual tokens, components, layout rules, and the canonical list of data sources that the UI is allowed to consume. It is the authoritative reference for any UI work in this repository.
 
-The interface has a dual aesthetic: a clean, light clinical surface for data cards and metrics, and a dark scanner-style panel for the 3D wireframe avatar. The contrast between the two is intentional — the dark panel signals precision and technology, the light surfaces signal clarity and accessibility.
+**Hard rule.** Every component described here must be backed by data the application actually has. AgeSignal is a referto-processing app, not a fitness tracker, calendar, or wearable platform. Components that imply data we do not ingest (sleep, hydration, exercise, nutrition tracking, upcoming medical appointments, real-time vitals) are out of scope. The "Data sources" section below is the closed list.
 
-## Color Philosophy
+---
 
-Color in AgeSignal carries clinical meaning. The three-tier semantic system (ok / warn / low) is used exclusively for health status. Never use these colors decoratively or for branding.
+## Data sources (what the UI is allowed to consume)
 
-**Status ok — green `#1D9E75`:** Value within normal range. Used for badge background fill (`#EAF3DE`), bar fill, progress arc, avatar zone color. Text on green backgrounds: `#3B6D11`.
+| Source | Fields used by the UI |
+|---|---|
+| `User` | `name`, `email`, `birthdate`, `sex` (enum), `height_cm`, `weight_kg`. Computed: `age`, `bmi`. |
+| `UserCondition` (one user → many) | `name`, `since_year`, `notes`, `is_active`. |
+| `LabTestDocument` (one user → many) | `name`, `test_date`, `status`, uploaded file via Spatie Media Library. |
+| `LabTestTable` | Tables extracted from a document. |
+| `LabTestResult` | `name`, `value`, `unit_measure`, `reference_min`, `reference_max`, `textual_range`, `numeric_value`, `operator`, `is_abnormal`, `loinc_num`, `loinc_status` (enum), `loinc_confidence_score`. |
+| `LoincCoreEntry` | `component`, `system`, `class`, `class_type`, `long_common_name`. Used to group parameters by class. |
 
-**Status warn — amber `#EF9F27`:** Value slightly outside normal range. Not dangerous — requires attention and discussion with a doctor. Used for banner background tint, badges, avatar zones. Text on amber backgrounds: `#854F0B`.
+Anything not in this list cannot back a UI component. If a feature requires data we do not have, the feature does not get built — the design pivots around the actual data.
 
-**Status low/high — red `#E24B4A`:** Value significantly outside range. Clear alert. Used for card border accent, alert box, avatar critical zones. Text on red backgrounds: `#791F1F`. This color is reserved for genuine clinical alerts — never use it for minor deviations.
+---
 
-**Brand blue `#005cb6`:** Used only for interactive elements (buttons, links, AI send button, selected states). Never for status encoding.
+## Design philosophy
 
-**Page background `#f0f4f8`:** Warm off-white with a slight blue tint. Not pure white — creates a subtle depth between page and card surfaces.
+1. **Honest before pretty.** A correct empty state beats a fake metric. If we don't have the data, say so.
+2. **Information density without noise.** Every pixel earns its place. No decorative elements that don't carry information.
+3. **Plain language.** The patient is not a clinician. Every numeric value has a written explanation in everyday Italian.
+4. **Reassure, then inform.** Color and copy are calibrated to inform without alarming. Red is reserved for values that genuinely warrant medical contact.
+5. **The patient owns their history.** All data shown is data the user uploaded. Nothing is invented, inferred without flagging, or sourced from outside the user's referti.
+6. **AI only as plain-language summarizer.** When AI is used, its job is to translate technical results into everyday language and suggest topics for the next medical visit. Never diagnoses, never prognoses, never prescriptions.
 
-**Dark panel `#060d1a`:** Deep navy, used exclusively for the 3D avatar container. The wireframe mesh lives here. Never use as a general card or section background.
+---
+
+## Color tokens
+
+All tokens live in `resources/css/app.css` under the Tailwind v4 `@theme` block. Reference them via Tailwind utilities (`bg-surface`, `text-text-primary`, etc.).
+
+### Surfaces
+| Token | Hex | Usage |
+|---|---|---|
+| `--color-page` | `#f0f4f8` | Page background — warm off-white with slight blue tint |
+| `--color-surface` | `#ffffff` | Card backgrounds |
+| `--color-surface-muted` | `#f5f7f9` | Subtle inset surfaces (chat bubbles, soft chips) |
+| `--color-surface-dark` | `#060d1a` | Reserved (no current consumer; do not use without need) |
+
+### Brand blue — interaction only, never status
+| Token | Hex | Usage |
+|---|---|---|
+| `--color-brand` | `#005cb6` | Primary buttons, links, focus rings |
+| `--color-brand-light` | `#b5d4f4` | Avatar circle background, accent chips |
+| `--color-brand-deep` | `#0c447c` | Text on `brand-light` |
+| `--color-brand-wire` | `#1e5fa0` | Reserved |
+| `--color-brand-glow` | `#2d8fe0` | Reserved |
+
+Never use brand blue to encode health status. It is an interaction colour only.
+
+### Status — semantic, reserved for health values
+| Token | Hex | Usage |
+|---|---|---|
+| `--color-status-ok` | `#1d9e75` | Solid fill — value within range |
+| `--color-status-ok-bg` | `#eaf3de` | Soft tint — badge / banner background |
+| `--color-status-ok-text` | `#3b6d11` | Text on `status-ok-bg` |
+| `--color-status-warn` | `#ef9f27` | Solid — slightly out of range |
+| `--color-status-warn-bg` | `#faeeda` | Soft tint |
+| `--color-status-warn-text` | `#854f0b` | Text on warn tint |
+| `--color-status-low` | `#e24b4a` | Solid — significantly out of range, warrants medical contact |
+| `--color-status-low-bg` | `#fcebeb` | Soft tint |
+| `--color-status-low-text` | `#791f1f` | Text on low tint |
+
+Status colors are reserved for `LabTestResult.loinc_status` (or equivalent classification). Never decorative.
+
+### Neutrals
+| Token | Hex | Usage |
+|---|---|---|
+| `--color-gray-50` | `#f0f4f8` | Aliased to page bg |
+| `--color-gray-100` | `#e2e6ea` | Bar tracks, default borders |
+| `--color-gray-200` | `#d9dde2` | Strong borders |
+| `--color-gray-400` | `#8c9198` | Muted icons |
+| `--color-gray-600` | `#6b7178` | Secondary text |
+| `--color-gray-900` | `#111922` | Primary text |
+| `--color-text-primary` | alias `gray-900` | |
+| `--color-text-secondary` | alias `gray-600` | |
+| `--color-border-default` | alias `gray-100` | |
+
+---
 
 ## Typography
 
-Single typeface throughout: Inter or DM Sans. Clean, geometric, highly legible at small sizes. No serif fonts — this is a UI, not editorial content.
+Single typeface: **Inter** primary, **DM Sans** fallback (loaded from Bunny Fonts in `partials/head.blade.php`). Geometric sans, optimized for small sizes. No serifs.
 
-**Score number (36px, weight 500):** Used only for the Health Score metric. Maximum visual prominence. Color: `#111922`.
+Semantic text utilities (`@theme` tokens — produce `text-{name}` classes):
 
-**Heading (15px, weight 500):** Patient name in header, panel titles. Color: `#111922`.
+| Class | Size | Weight | Line-height | Used for |
+|---|---|---|---|---|
+| `text-score` | 36px | 500 | 1.1 | Reserved for the single most important number on a screen (rarely used) |
+| `text-display` | 2rem | 500 | 1.2 | Section displays (rare) |
+| `text-heading` | 15px | 500 | 1.3 | Patient name, panel titles |
+| `text-label` | 12px | 500 | 1.3 | Parameter names, row labels |
+| `text-body` | 11px | 400 | 1.45 | Plain-language explanations, descriptions |
+| `text-caption` | 10px | 400 | 1.3 | Dates, units, metadata, section headers (with letter-spacing 0.05em + uppercase) |
 
-**Label (12px, weight 500):** Parameter names inside cards, section headers. Color: `#111922`.
+**Minimum size: 10px.** Never go below. Sentence case throughout — uppercase only for section dividers (caption + tracking + uppercase).
 
-**Body (11px, weight 400):** Human language explanations, trend descriptions, AI chat messages. Line-height: 1.45. Color: `#6b7178` for secondary context, `#111922` for primary content.
+---
 
-**Caption (10px, weight 400):** Dates, units, metadata. Color: `#6b7178`. Minimum size — never go below 10px.
+## Spacing
 
-**Uppercase labels (10px, weight 400, letter-spacing 0.05em):** Section dividers like "PARAMETRI SETTIMANALI", "AI CARE". Color: `#6b7178`. Used sparingly — only for major section identification.
+Tailwind's default 4px-base scale matches the design system. Use `1` (4), `2` (8), `2.5` (10), `3` (12), `4` (16), `5` (20), `6` (24), `8` (32), `10` (40). The dashboard's outer gap is `2.5` (10px); inner card padding is `4` (16px) horizontal, `4` vertical.
+
+## Radius
+
+| Class | Value | Used for |
+|---|---|---|
+| `rounded-sm` | 6px | Small buttons, badges (other than full pills) |
+| `rounded-md` | 8px | Inputs, ai-care chat bubbles |
+| `rounded-lg` | 12px | (Reserved) |
+| `rounded-xl` | 16px | All cards, header, banner, footer |
+| `rounded-full` | 9999px | Status pills, dots, avatar circle |
+
+---
 
 ## Layout
 
-Three-column grid on desktop. Columns: left (1.1fr) · center (1.6fr) · right (1.1fr). Gap: 10px. Outer padding: 10px. Border-radius on main container: 16px.
+**Authenticated shell** — Flux sidebar layout (`x-layouts::app`) provides app navigation. The sidebar handles nav; each route's content renders inside `<flux:main>`.
 
-**Left column:** Health score card → weekly metric progress circles → appointments list.
+**Dashboard layout** — full-width column inside `flux:main`, with internal padding `2.5` and gap `2.5`:
 
-**Center column:** 3D wireframe avatar with diagnostic pins → trend line chart (6 months) → horizontal value bars with badges.
+```
+┌──────────────────────────────────────────────────────────┐
+│ HEADER · profile (avatar, name, age/sex/BMI, last referto)│
+├──────────────────────────────────────────────────────────┤
+│ BANNER (conditional — profile incomplete OR values out)   │
+├───────────────────────────────────┬──────────────────────┤
+│ LEFT (2fr) — parameter content    │ RIGHT (1fr) —        │
+│   · parameter groups (LOINC class)│ conditions, AI Care  │
+│   · referti history               │ placeholder           │
+└───────────────────────────────────┴──────────────────────┘
+```
 
-**Right column:** Blood pressure gauge → AI Care chat → BMI card.
+The dashboard has a 2-column desktop grid `2fr / 1fr` (no fixed minimum width yet — mobile breakpoints to be defined when needed).
 
-**Header:** Full width. White surface. Patient avatar circle (initials) + name + greeting left. Last analysis date right. Height: ~58px.
-
-**Status banner:** Full width. Appears immediately below header. Background tinted with dominant status color (amber if warnings present, red if critical values present, green if all normal). Contains status sentence + subtitle listing specific out-of-range parameters. Never shows generic text — always names the specific issue.
-
-**Footer:** Full width. White surface. Last analysis date left. Download PDF button right.
+---
 
 ## Components
 
-### Health Score Card
-Large centered number (36px) representing overall health score 0–100. Below: "su 100" in muted caption. Below: comparison string in green — "Meglio del X% delle persone" — translates the score into a human benchmark. Below: horizontal progress bar, full width, green-to-teal gradient fill proportional to score. Background: white card, standard border.
+### Card
+Standard surface. Class: `rounded-xl border border-border-default bg-surface px-4 py-4`. Sections of the dashboard are composed of these.
 
-### Progress Circles
-64×64px canvas elements. Track: `#f0f0f0`, 5px line width. Arc: status color, 5px line width, rounded linecap. Start: top (−π/2). Percentage value centered inside in 11px bold. Used in a 2×2 grid for the four main parameters.
+### Section header (inside a card)
+Caption text, uppercase, slight tracking, `text-text-secondary`. Class pattern:
+```html
+<div class="text-caption text-text-secondary mb-3"
+     style="letter-spacing: 0.05em; text-transform: uppercase;">
+  Section name
+</div>
+```
 
-### Value Bars
-Horizontal layout per parameter: parameter name (80px fixed, 11px, muted) → bar track (flex 1, 5px height, `#f0f0f0`, rounded) → bar fill (status color) → numeric value (70px fixed, 11px, bold) → status badge (pill). Bar fill width percentage represents position within/outside normal range relative to max measurable value.
+### Status badge — `<x-status-badge :status="ok|warn|low" :label="..." />`
+Pill, 9px font, weight 500. Three variants matching the status palette. Display-only, never interactive. See [resources/views/components/status-badge.blade.php](resources/views/components/status-badge.blade.php).
 
-### Gauge (Blood Pressure)
-Semicircular gauge drawn on canvas. Track arc: `#f0f0f0`, 10px line width. Fill arc: status color, 10px line width, rounded linecap. Needle: thin line from center, `#111922`, 2px. Value label centered below arc: systolic/diastolic in 14px bold, unit in 10px muted. Status label below: "Normale / Attenzione / Alto".
+### Header (dashboard)
+Avatar circle (40×40px, `bg-brand-light`, `text-brand-deep`, initials inside) + patient name + summary line ("45 anni · Uomo · BMI 24.8 · Normopeso") on the left, "Ultimo referto · 28 apr 2026" on the right. The summary line lists only the profile fields the user has actually filled in; falls back to "Profilo non ancora compilato" if all are missing.
 
-### 3D Wireframe Avatar
-Canvas rendered with Three.js r128. Background: `#060d1a`. Camera: perspective 42°, position z=5. Ambient light `#223355`. Directional light `#4488bb` from top-right. Floor grid: `#0d1f3a` / `#0a1628`, y=−1.5.
+### Profile-incomplete banner
+Visible only when any of `birthdate`, `sex`, `height_cm`, `weight_kg` is null. Uses the `status-warn` palette. Includes a link to the profile edit page. Does not use red — an incomplete profile is not a clinical issue.
 
-Body construction: geometric primitives (SphereGeometry, CylinderGeometry) assembled as anatomical skeleton. Base wireframe: `#1e5fa0` at 40–55% opacity. Joint nodes: `#2d8fe0` at 55% opacity, slightly larger spheres. Spine: small spheres aligned vertically, `#3366aa`.
+### Parameter group (planned)
+Card containing a heading (LOINC `class` name in Italian) and a list of parameters. For each parameter: name, latest value + unit, status badge, sparkline of historical values, trend arrow. Click → drill-down page with full timeline.
 
-Body proportions scale with BMI: thin for underweight (BMI<18.5), proportionate for normal (18.5–25), wider torso+limbs for overweight (25–30), clearly round silhouette for obese (>30).
+### Sparkline (planned)
+Small inline SVG line, ~80×24px, color = current status. Maps the last 6–12 values for one parameter.
 
-Diagnostic zones (color driven by lab values):
-- Heart sphere (chest, slightly left): pulsates with sine animation. Color: ok/warn/low based on cholesterol.
-- Abdomen sphere (center torso): color based on blood glucose.
-- Knee spheres (both): color based on Vitamin D.
+### Drill-down (planned route)
+Single-parameter page: full timeline chart (line over time, range as background band), value table, plain-language explanation derived from LOINC and the user's status history.
 
-Overlay pins (HTML absolutely positioned over canvas): small colored dot + connector line + label bubble. Each pin identifies the diagnostic zone and its status with a brief label ("Colesterolo ⚠" / "Glicemia ✓"). Pins use `pointer-events: none`.
+### AI Care (placeholder)
+Card with title and a one-paragraph honest description of what the feature will do when active. No mock chat. When implemented, it must operate on the user's actual referti via Prism, output Italian plain-language summaries, suggest topics for the next medical visit, and never diagnose.
 
-Avatar is draggable: mousedown/mousemove/touchmove rotate Y axis freely, X axis clamped −0.6 to +0.7 rad.
+### Referti history
+Compact list of recent `LabTestDocument` rows: dot + name + test date + processing status badge. Linked to the full referti index page.
 
-### AI Care Chat
-Compact chat interface. Bubbles: assistant messages in `#f5f7f9` background, user messages in `#B5D4F4` (light blue), right-aligned. Font 11px, line-height 1.45. Input row: text input + send button (`#005cb6` background, white text). The AI assistant speaks in plain Italian, never uses medical jargon, always frames advice positively. Beta badge in header.
+### Conditions chips
+Pills listing the user's `activeConditions`. Each pill: name + (optional) "since YEAR" in muted text. Empty state: "Nessuna condizione dichiarata."
 
-### Status Badge (pill)
-Border-radius full (9999px). Font 9px, weight 500. Padding 2px 8px. Three variants:
-- ok: background `#EAF3DE`, text `#3B6D11`
-- warn (alto/attenzione): background `#FAEEDA`, text `#854F0B`
-- low/critical (basso): background `#FCEBEB`, text `#791F1F`
+---
 
-### Alert Banner
-Full width strip below header. Visible only when one or more values are warn or critical. Background: `#FAEEDA` (warn) or `#FCEBEB` (critical). Left: icon + bold status sentence + subtitle. Right (if critical): "Contatta il medico" button — solid `#A32D2D` background, white text, 5px border-radius, 10px font. The banner text always names the specific parameters, never generic.
+## Status logic
 
-### Appointments List
-Stack of appointment rows. Each row: colored dot (status color matching urgency) + doctor name + specialty (11px bold + 10px muted) + time (10px muted, right-aligned). No borders between rows — breathing room via gap: 6px is sufficient.
+`LabTestResult.loinc_status` is the source of truth. The UI reads it and maps to the badge palette:
 
-## Clinical Reference Data
+| `loinc_status` | Badge variant | Meaning shown to user |
+|---|---|---|
+| in-range / normal | `ok` | "Nel range" |
+| borderline / elevated / low | `warn` | "Attenzione" |
+| out-of-range / abnormal | `low` | "Fuori range" |
 
-These ranges govern all status color assignments in the interface.
+The classification is computed by the AI extraction pipeline (`ClassifyLabTestResultJob`) based on the value vs `reference_min` / `reference_max` / `textual_range`. The UI must not re-classify; it only renders.
 
-| Parameter | Unit | Green (ok) | Amber (warn) | Red (critical) |
-|---|---|---|---|---|
-| Blood glucose | mg/dL | 70–100 | 100–125 or 60–70 | >125 or <60 |
-| Total cholesterol | mg/dL | <200 | 200–240 | >240 |
-| Hemoglobin (M) | g/dL | 13.5–17.5 | 12–13.5 or 17.5–18.5 | <12 or >18.5 |
-| Hemoglobin (F) | g/dL | 12–16 | 11–12 or 16–17 | <11 or >17 |
-| Vitamin D | ng/mL | ≥30 | 20–29 | <20 |
-| BMI | — | 18.5–24.9 | 25–29.9 or 17–18.5 | >30 or <17 |
-| Systolic BP | mmHg | <120 | 120–139 | ≥140 |
-| Diastolic BP | mmHg | <80 | 80–89 | ≥90 |
+---
 
-## Do's and Don'ts
+## Empty states
+
+Every list, card, and chart has a defined empty state. Pattern: short sentence in `text-body text-text-secondary` describing the absence, optionally followed by a single action link if there's one obvious next step. Never hide a section silently.
+
+---
+
+## Do / Don't
 
 **Do:**
-- Always show a human language explanation alongside every numeric value
-- Use trend arrows (↑ ↓ →) to show direction of change — the patient cares more about trend than absolute value
-- Show the health score comparison ("better than X% of people") — benchmarking is more meaningful than raw numbers
-- Keep the AI assistant tone calm, warm, and practical — food suggestions, lifestyle tips, never diagnoses
-- Use the dark avatar panel as the emotional center of the dashboard — it creates identity and engagement
-- Show the status banner only when needed — if everything is normal, replace it with a positive confirmation
+- Show only data we ingest. If a section has no data, say so explicitly.
+- Use the status palette only for `loinc_status`-driven elements.
+- Keep AI Care honest about what it can and cannot do.
+- Translate medical jargon to everyday Italian. "Hypercholesterolemia" → "colesterolo alto".
 
 **Don't:**
-- Never show raw values without explanation
-- Never use red for minor deviations — red is reserved for values that genuinely warrant medical contact
-- Never show medical jargon in patient-facing text (no "hypercholesterolemia", no "hyponatremia")
-- Never stack more than 4 cards in the right column — cognitive overload kills trust
-- Never animate anything except the heartbeat pulse on the avatar — motion should be functional, not decorative
-- Never use the brand blue (#005cb6) for status encoding — it is an interaction color only
-- Never remove the AI Care component — it is the primary engagement driver for repeat visits
+- Don't invent metrics (no health scores, no fitness data, no calendar).
+- Don't decorate. A 3D wireframe avatar that doesn't carry diagnostic information is a decoration. Cut it.
+- Don't use red for borderline values. Red is reserved for genuinely worrying values.
+- Don't show raw values without explanation. Every number needs a written sentence next to it.
+- Don't forecast or diagnose, even when AI is involved.
+
+---
+
+## Changelog
+
+### 0.2 — 2026-04-30
+- **Rewritten from scratch.** Previous version (0.1) was rejected for proposing components not backed by available data: sleep / hydration / movement / nutrition metrics, "Health Score" composite number, calendar of upcoming medical appointments, and a 3D wireframe avatar built from sphere primitives. None reflected actual ingestible data and the avatar carried no diagnostic information.
+- Added explicit "Data sources" section as the closed list of what the UI may consume.
+- Added "Design philosophy" rules with information-value tests.
+- Layout simplified from 3-column desktop dashboard to 2-column (parameter content / conditions + AI Care).
+- Status colors (`ok`/`warn`/`low`) now bound exclusively to `LabTestResult.loinc_status`.
+- 3D avatar removed entirely. Component file deleted.
+- Empty states made first-class — no section can render with no honest content.
+
+### 0.1 — initial draft (deprecated)
+- 3-column dashboard with Health Score, weekly fitness metrics, appointments, 3D wireframe avatar, AI Care chat, blood pressure gauge, BMI card. Components mostly fictional; design scope drifted from data domain. Replaced.

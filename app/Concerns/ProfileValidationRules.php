@@ -2,28 +2,34 @@
 
 namespace App\Concerns;
 
+use App\Enums\Sex;
 use Illuminate\Contracts\Validation\ValidationRule;
-use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Enum;
 
 trait ProfileValidationRules
 {
     /**
-     * Get the validation rules used to validate passwords.
+     * Base profile rules used at registration and profile editing.
      *
-     * @return array<int, ValidationRule|array<mixed>|string>
+     * @param  int|null  $ignoreUserId  user id to exclude from email uniqueness check
+     * @return array<string, array<int, ValidationRule|Enum|string>>
      */
-    protected function passwordRules(): array
+    protected function profileRules(?int $ignoreUserId = null): array
     {
-        return ['required', 'string', Password::default(), 'confirmed'];
-    }
-
-    /**
-     * Get the validation rules used to validate the current password.
-     *
-     * @return array<int, ValidationRule|array<mixed>|string>
-     */
-    protected function currentPasswordRules(): array
-    {
-        return ['required', 'string', 'current_password'];
+        return [
+            'name' => ['required', 'string', 'max:255'],
+            'email' => [
+                'required',
+                'string',
+                'email',
+                'max:255',
+                Rule::unique('users')->ignore($ignoreUserId),
+            ],
+            'birthdate' => ['nullable', 'date', 'before:today', 'after:1900-01-01'],
+            'sex' => ['nullable', new Enum(Sex::class)],
+            'height_cm' => ['nullable', 'integer', 'min:50', 'max:260'],
+            'weight_kg' => ['nullable', 'numeric', 'min:20', 'max:400'],
+        ];
     }
 }

@@ -9,30 +9,89 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Inter', 'DM Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
-    --color-zinc-50: #fafafa;
-    --color-zinc-100: #f5f5f5;
-    --color-zinc-200: #e5e5e5;
-    --color-zinc-300: #d4d4d4;
-    --color-zinc-400: #a3a3a3;
-    --color-zinc-500: #737373;
-    --color-zinc-600: #525252;
-    --color-zinc-700: #404040;
-    --color-zinc-800: #262626;
-    --color-zinc-900: #171717;
-    --color-zinc-950: #0a0a0a;
+    /* Typography scale — DESIGN.md */
+    --text-score: 36px;
+    --text-score--line-height: 1.1;
+    --text-score--font-weight: 500;
 
-    --color-accent: var(--color-neutral-800);
-    --color-accent-content: var(--color-neutral-800);
-    --color-accent-foreground: var(--color-white);
+    --text-display: 2rem;
+    --text-display--line-height: 1.2;
+    --text-display--font-weight: 500;
+
+    --text-heading: 15px;
+    --text-heading--line-height: 1.3;
+    --text-heading--font-weight: 500;
+
+    --text-label: 12px;
+    --text-label--line-height: 1.3;
+    --text-label--font-weight: 500;
+
+    --text-body: 11px;
+    --text-body--line-height: 1.45;
+    --text-body--font-weight: 400;
+
+    --text-caption: 10px;
+    --text-caption--line-height: 1.3;
+    --text-caption--font-weight: 400;
+
+    /* Surfaces */
+    --color-page: #f0f4f8;
+    --color-surface: #ffffff;
+    --color-surface-muted: #f5f7f9;
+    --color-surface-dark: #060d1a;
+
+    /* Brand blue — interaction only, never for status encoding */
+    --color-brand: #005cb6;
+    --color-brand-light: #b5d4f4;
+    --color-brand-deep: #0c447c;
+    --color-brand-wire: #1e5fa0;
+    --color-brand-glow: #2d8fe0;
+
+    /* Status — semantic, reserved for health values */
+    --color-status-ok: #1d9e75;
+    --color-status-ok-bg: #eaf3de;
+    --color-status-ok-text: #3b6d11;
+
+    --color-status-warn: #ef9f27;
+    --color-status-warn-bg: #faeeda;
+    --color-status-warn-text: #854f0b;
+
+    --color-status-low: #e24b4a;
+    --color-status-low-bg: #fcebeb;
+    --color-status-low-text: #791f1f;
+
+    /* Neutrals — DESIGN.md ramp */
+    --color-gray-50: #f0f4f8;
+    --color-gray-100: #e2e6ea;
+    --color-gray-200: #d9dde2;
+    --color-gray-400: #8c9198;
+    --color-gray-600: #6b7178;
+    --color-gray-900: #111922;
+
+    /* Aliases */
+    --color-text-primary: var(--color-gray-900);
+    --color-text-secondary: var(--color-gray-600);
+    --color-border-default: var(--color-gray-100);
+
+    /* Radius scale */
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+
+    /* Flux interaction accent → brand blue */
+    --color-accent: var(--color-brand);
+    --color-accent-content: var(--color-brand);
+    --color-accent-foreground: #ffffff;
 }
 
 @layer theme {
     .dark {
-        --color-accent: var(--color-white);
-        --color-accent-content: var(--color-white);
-        --color-accent-foreground: var(--color-neutral-800);
+        --color-accent: var(--color-brand-glow);
+        --color-accent-content: var(--color-brand-glow);
+        --color-accent-foreground: var(--color-gray-900);
     }
 }
 
@@ -43,7 +102,7 @@
     ::before,
     ::backdrop,
     ::file-selector-button {
-        border-color: var(--color-gray-200, currentColor);
+        border-color: var(--color-border-default, currentColor);
     }
 }
 

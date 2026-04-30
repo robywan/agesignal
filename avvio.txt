@@ -1,0 +1,14 @@
+cd /Users/zingo/Desktop/agesignal-repo
+ddev start
+ddev ppm run dev
+
+https://agesignal.ddev.site
+
+Lavarel
+
+info@rossozingone.it
+agesignal
+
+Nome branch: design
+
+Git push
