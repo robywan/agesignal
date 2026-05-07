@@ -25,6 +25,10 @@
                     <flux:sidebar.item icon="document-text" :href="route('documents.index')" :current="request()->routeIs('documents.index')" wire:navigate>
                         {{ __('Referti') }}
                     </flux:sidebar.item>
+
+                    <flux:sidebar.item icon="chart-bar" :href="route('andamento')" :current="request()->routeIs('andamento')" wire:navigate>
+                        {{ __('Andamento storico') }}
+                    </flux:sidebar.item>
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 
