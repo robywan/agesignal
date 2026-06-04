@@ -14,7 +14,7 @@ use Prism\Prism\Exceptions\PrismProviderOverloadedException;
 use Prism\Prism\Exceptions\PrismRateLimitedException;
 use Throwable;
 
-class ClassifyLabTestResultJob implements ShouldQueue, ShouldBeUnique
+class ClassifyLabTestResultJob implements ShouldBeUnique, ShouldQueue
 {
     use Queueable;
 
@@ -47,7 +47,7 @@ class ClassifyLabTestResultJob implements ShouldQueue, ShouldBeUnique
                 ->backoff(1)
                 ->when(fn (Throwable $throwable) => in_array(get_class($throwable), [
                     PrismRateLimitedException::class,
-                    PrismProviderOverloadedException::class
+                    PrismProviderOverloadedException::class,
                 ])),
         ];
     }
@@ -58,17 +58,17 @@ class ClassifyLabTestResultJob implements ShouldQueue, ShouldBeUnique
             return; // Skip if already classified
         }
 
-        $this->labTestResult->update([
-            'loinc_status' => LabTestResultLoincStatus::Processing
-        ]);
+        $this->labTestResult->fill([
+            'loinc_status' => LabTestResultLoincStatus::Processing,
+        ])->save();
 
         $action($this->labTestResult);
     }
 
     public function failed(?Throwable $exception): void
     {
-        $this->labTestResult->update([
-            'loinc_status' => LabTestResultLoincStatus::Failed
-        ]);
+        $this->labTestResult->fill([
+            'loinc_status' => LabTestResultLoincStatus::Failed,
+        ])->save();
     }
 }

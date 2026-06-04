@@ -26,9 +26,9 @@ class ProcessDocumentTable implements ShouldQueue
     public function handle(
         ExtractLabTestResults $extractResultsAction
     ): void {
-        $this->labTestTable->update([
+        $this->labTestTable->fill([
             'request_status' => LabTestResultRequestStatus::Processing,
-        ]);
+        ])->save();
 
         $results = $extractResultsAction($this->labTestTable);
 
@@ -41,9 +41,9 @@ class ProcessDocumentTable implements ShouldQueue
 
     public function failed(?Throwable $exception): void
     {
-        $this->labTestTable->update([
+        $this->labTestTable->fill([
             'request_status' => LabTestResultRequestStatus::Failed,
-        ]);
+        ])->save();
 
         $this->labTestTable->document->syncStatusFromTables();
     }

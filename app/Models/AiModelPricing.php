@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\AiModelPricingFactory;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,7 +11,7 @@ use Prism\Prism\Enums\Provider;
 
 class AiModelPricing extends Model
 {
-    /** @use HasFactory<\Database\Factories\AiModelPricingFactory> */
+    /** @use HasFactory<AiModelPricingFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -36,9 +37,12 @@ class AiModelPricing extends Model
     }
 
     #[Scope]
-    public function forModel(Builder $query, Provider $provider, string $model): void
+    protected function forModel(Builder $query, string $model, ?string $provider = null): void
     {
-        $query->where('provider', $provider->value)
-            ->where('model', $model);
+        $query->where('model', $model);
+
+        if ($provider) {
+            $query->where('provider', $provider);
+        }
     }
 }
