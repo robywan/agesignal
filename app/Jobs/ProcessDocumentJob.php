@@ -25,16 +25,16 @@ class ProcessDocumentJob implements ShouldQueue
     public function handle(
         ExtractLabTestTables $extractTablesAction
     ): void {
-        $this->document->update([
+        $this->document->fill([
             'status' => LabTestDocumentStatus::Pending,
-        ]);
+        ])->save();
 
         $tables = $extractTablesAction($this->document);
 
         if ($tables->isNotEmpty()) {
-            $this->document->update([
+            $this->document->fill([
                 'status' => LabTestDocumentStatus::Extracted,
-            ]);
+            ])->save();
         }
 
         foreach ($tables as $table) {

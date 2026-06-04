@@ -6,20 +6,7 @@
 
 ## Project-Specific Notes
 
-- Keep the `<laravel-boost-guidelines>` section below intact. Treat it as generated content and add project-specific notes only above it.
-- This repository is an application for processing laboratory test documents. The core workflow is: upload a document, extract tables and results, normalize/classify results, and persist AI usage metadata.
-- Settings pages are routed with `Route::livewire()` using `pages::settings.*` aliases. Home and dashboard use simple `Route::view()` routes.
-- Auth and settings pages under `resources/views/pages` are implemented as inline anonymous Livewire components inside Blade files and use Flux UI components extensively. Preserve that pattern when extending those pages.
-- Settings navigation uses `wire:navigate`, and forms on those pages usually submit with Livewire actions such as `wire:submit`.
-- Filament resources follow a split Filament v5 structure with dedicated `Resource`, `Pages`, `Schemas`, `Tables`, `Actions`, `Widgets`, and nested `Resources` directories instead of putting all configuration in one class.
-- Lab test document uploads use Spatie Media Library. `LabTestDocument` owns the `files` media collection, and Filament forms use `SpatieMediaLibraryFileUpload` for that collection.
-- AI-related workflows live primarily in `app/Actions` and `app/Prisma/Tools`, use Prism structured responses, and persist token/cost data through `aiUsages()` relations and `AiModelPricing` lookups.
-- Document processing is queue-driven. Filament actions dispatch jobs such as `ProcessDocumentJob`, which then fan out into downstream jobs for table and result processing.
-- Pest is configured in `tests/Pest.php` for Feature tests via `Tests\TestCase`. `RefreshDatabase` is not enabled globally there, so add it per test file when needed.
-- Frontend tooling is Vite plus Tailwind CSS v4. For frontend changes, prefer `ddev npm run dev` during development and `ddev npm run build` for production builds.
-- The top-level `README.md` is still the default Laravel skeleton README, so treat the codebase and this file as the authoritative project-specific reference.
-
-<laravel-boost-guidelines>
+- Keep the `<laravel-boost-guidelines>
 === foundation rules ===
 
 # Laravel Boost Guidelines
@@ -32,6 +19,7 @@ This application is a Laravel application and its main Laravel ecosystems packag
 
 - php - 8.4
 - filament/filament (FILAMENT) - v5
+- laravel/ai (AI) - v0
 - laravel/fortify (FORTIFY) - v1
 - laravel/framework (LARAVEL) - v13
 - laravel/prompts (PROMPTS) - v0
@@ -51,6 +39,7 @@ This application is a Laravel application and its main Laravel ecosystems packag
 
 This project has domain-specific skills available. You MUST activate the relevant skill whenever you work in that domain—don't wait until you're stuck.
 
+- `ai-sdk-development` — TRIGGER when working with ai-sdk which is Laravel official first-party AI SDK. Activate when building, editing AI agents, chatbots, text generation, image generation, audio/TTS, transcription/STT, embeddings, RAG, vector stores, reranking, structured output, streaming, conversation memory, tools, queueing, broadcasting, and provider failover across OpenAI, Anthropic, Gemini, Azure, Groq, xAI, DeepSeek, Mistral, Ollama, ElevenLabs, Cohere, Jina, and VoyageAI. Invoke when the user references ai-sdk, the `Laravel\Ai\` namespace, or this project's AI features — not for other AI packages used directly.
 - `fortify-development` — ACTIVATE when the user works on authentication in Laravel. This includes login, registration, password reset, email verification, two-factor authentication (2FA/TOTP/QR codes/recovery codes), profile updates, password confirmation, or any auth-related routes and controllers. Activate when the user mentions Fortify, auth, authentication, login, register, signup, forgot password, verify email, 2FA, or references app/Actions/Fortify/, CreateNewUser, UpdateUserProfileInformation, FortifyServiceProvider, config/fortify.php, or auth guards. Fortify is the frontend-agnostic authentication backend for Laravel that registers all auth routes and controllers. Also activate when building SPA or headless authentication, customizing login redirects, overriding response contracts like LoginResponse, or configuring login throttling. Do NOT activate for Laravel Passport (OAuth2 API tokens), Socialite (OAuth social login), or non-auth Laravel features.
 - `laravel-best-practices` — Apply this skill whenever writing, reviewing, or refactoring Laravel PHP code. This includes creating or modifying controllers, models, migrations, form requests, policies, jobs, scheduled commands, service classes, and Eloquent queries. Triggers for N+1 and query performance issues, caching strategies, authorization and security patterns, validation, error handling, queue and job configuration, route definitions, and architectural decisions. Also use for Laravel code reviews and refactoring existing Laravel code to follow best practices. Covers any task involving Laravel backend PHP code patterns.
 - `fluxui-development` — Use this skill for Flux UI development in Livewire applications only. Trigger when working with <flux:*> components, building or customizing Livewire component UIs, creating forms, modals, tables, or other interactive elements. Covers: flux: components (buttons, inputs, modals, forms, tables, date-pickers, kanban, badges, tooltips, etc.), component composition, Tailwind CSS styling, Heroicons/Lucide icon integration, validation patterns, responsive design, and theming. Do not use for non-Livewire frameworks or non-component styling.

@@ -56,9 +56,9 @@ class ClassifyLabTestResultJob implements ShouldBeUnique, ShouldQueue
             return; // Skip if already classified
         }
 
-        $this->labTestResult->update([
+        $this->labTestResult->fill([
             'loinc_status' => LabTestResultLoincStatus::Processing,
-        ]);
+        ])->save();
 
         $action($this->labTestResult);
 
@@ -69,8 +69,8 @@ class ClassifyLabTestResultJob implements ShouldBeUnique, ShouldQueue
 
     public function failed(?Throwable $exception): void
     {
-        $this->labTestResult->update([
+        $this->labTestResult->fill([
             'loinc_status' => LabTestResultLoincStatus::Failed,
-        ]);
+        ])->save();
     }
 }

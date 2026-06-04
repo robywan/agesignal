@@ -1,12 +1,6 @@
 ENV PHP="/usr/bin/php${DDEV_PHP_VERSION}"
 ENV PHP_CONFIG="/usr/bin/php-config${DDEV_PHP_VERSION}"
 
-RUN --mount=type=cache,sharing=locked,target=/var/lib/apt \
-    --mount=type=cache,sharing=locked,target=/var/cache/apt \
-    apt-get -y update \
-    && apt-get -y install gcc make autoconf libtool bison re2c pkg-config php-dev clang libclang-dev cmake git curl \
-    && apt-get clean
-
 RUN --mount=type=cache,sharing=locked,target=/tmp/kreuzberg/target \
     --mount=type=cache,sharing=locked,target=/root/.cargo/registry \
     --mount=type=cache,sharing=locked,target=/root/.cargo/git \
