@@ -31,8 +31,24 @@ class LoincCodeFinder implements Tool
         $system = (string) $request->string('system')->trim();
         $scale = (string) $request->string('scale')->trim();
         $property = (string) $request->string('property')->trim();
+        $observedValue = (string) $request->string('observed_value')->trim();
         $normalizedComponent = $this->normalizeTerm($component);
         $componentTokens = $this->extractSearchTokens($normalizedComponent);
+        $allowShortNameSearch = $this->shouldSearchShortName($component, $normalizedComponent);
+        $observationProfiles = $this->observationProfilesFor(
+            normalizedComponent: $normalizedComponent,
+            system: $system,
+            scale: $scale,
+            property: $property,
+            observedValue: $observedValue,
+        );
+        $semanticProfiles = $this->semanticProfilesFor(
+            component: $component,
+            normalizedComponent: $normalizedComponent,
+            system: $system,
+            scale: $scale,
+            property: $property,
+        );
 
         $candidates = $this->buildPrimaryQuery(
             component: $component,
@@ -41,7 +57,22 @@ class LoincCodeFinder implements Tool
             system: $system,
             scale: $scale,
             property: $property,
+            allowShortNameSearch: $allowShortNameSearch,
         )->get();
+
+        $profileCandidates = $this->fetchProfileCandidates(
+            profiles: [...$observationProfiles, ...$semanticProfiles],
+            fallback: false,
+        );
+
+        if ($profileCandidates->isNotEmpty()) {
+            $candidates = $candidates
+                ->concat($profileCandidates)
+                ->unique('loinc_num')
+                ->sortByDesc('relevance_score')
+                ->take(10)
+                ->values();
+        }
 
         if ($candidates->isEmpty() || ((int) ($candidates->first()->relevance_score ?? 0)) < 70) {
             $fallbackCandidates = $this->buildFallbackQuery(
@@ -50,7 +81,16 @@ class LoincCodeFinder implements Tool
                 system: $system,
                 scale: $scale,
                 property: $property,
+                allowShortNameSearch: $allowShortNameSearch,
             )->get();
+
+            if ($observationProfiles !== [] || $semanticProfiles !== []) {
+                $fallbackCandidates = $fallbackCandidates
+                    ->concat($this->fetchProfileCandidates(
+                        profiles: [...$observationProfiles, ...$semanticProfiles],
+                        fallback: true,
+                    ));
+            }
 
             $candidates = $candidates
                 ->concat($fallbackCandidates)
@@ -75,29 +115,39 @@ class LoincCodeFinder implements Tool
         string $system,
         string $scale,
         string $property,
+        bool $allowShortNameSearch,
     ): Builder {
         return LoincCoreEntry::query()
             ->where('status', 'ACTIVE')
-            ->where(function (Builder $query) use ($component, $normalizedComponent, $componentTokens): void {
+            ->where(function (Builder $query) use ($component, $normalizedComponent, $componentTokens, $allowShortNameSearch): void {
                 $query
                     ->where('component', $component)
                     ->orWhere('component', 'LIKE', "{$component}.%")
                     ->orWhere('component', 'LIKE', "%{$component}%")
-                    ->orWhere('short_name', 'LIKE', "%{$component}%")
                     ->orWhere('long_common_name', 'LIKE', "%{$component}%");
+
+                if ($allowShortNameSearch) {
+                    $query->orWhere('short_name', 'LIKE', "%{$component}%");
+                }
 
                 if ($normalizedComponent !== '' && $normalizedComponent !== $component) {
                     $query
                         ->orWhere('component', 'LIKE', "%{$normalizedComponent}%")
-                        ->orWhere('short_name', 'LIKE', "%{$normalizedComponent}%")
                         ->orWhere('long_common_name', 'LIKE', "%{$normalizedComponent}%");
+
+                    if ($allowShortNameSearch) {
+                        $query->orWhere('short_name', 'LIKE', "%{$normalizedComponent}%");
+                    }
                 }
 
                 foreach ($componentTokens as $token) {
                     $query
                         ->orWhere('component', 'LIKE', "%{$token}%")
-                        ->orWhere('short_name', 'LIKE', "%{$token}%")
                         ->orWhere('long_common_name', 'LIKE', "%{$token}%");
+
+                    if ($allowShortNameSearch) {
+                        $query->orWhere('short_name', 'LIKE', "%{$token}%");
+                    }
                 }
             })
             ->selectRaw($this->relevanceSql(), $this->relevanceBindings(
@@ -106,6 +156,7 @@ class LoincCodeFinder implements Tool
                 system: $system,
                 scale: $scale,
                 property: $property,
+                allowShortNameSearch: $allowShortNameSearch,
             ))
             ->orderByDesc('relevance_score')
             ->orderBy('component')
@@ -118,22 +169,29 @@ class LoincCodeFinder implements Tool
         string $system,
         string $scale,
         string $property,
+        bool $allowShortNameSearch,
     ): Builder {
         return LoincCoreEntry::query()
             ->where('status', 'ACTIVE')
-            ->where(function (Builder $query) use ($normalizedComponent, $componentTokens): void {
+            ->where(function (Builder $query) use ($normalizedComponent, $componentTokens, $allowShortNameSearch): void {
                 if ($normalizedComponent !== '') {
                     $query
                         ->where('component', 'LIKE', "%{$normalizedComponent}%")
-                        ->orWhere('short_name', 'LIKE', "%{$normalizedComponent}%")
                         ->orWhere('long_common_name', 'LIKE', "%{$normalizedComponent}%");
+
+                    if ($allowShortNameSearch) {
+                        $query->orWhere('short_name', 'LIKE', "%{$normalizedComponent}%");
+                    }
                 }
 
                 foreach ($componentTokens as $token) {
                     $query
                         ->orWhere('component', 'LIKE', "%{$token}%")
-                        ->orWhere('short_name', 'LIKE', "%{$token}%")
                         ->orWhere('long_common_name', 'LIKE', "%{$token}%");
+
+                    if ($allowShortNameSearch) {
+                        $query->orWhere('short_name', 'LIKE', "%{$token}%");
+                    }
                 }
             })
             ->selectRaw(<<<'SQL'
@@ -218,17 +276,21 @@ class LoincCodeFinder implements Tool
         string $system,
         string $scale,
         string $property,
+        bool $allowShortNameSearch,
     ): array {
+        $shortNameComponent = $allowShortNameSearch ? "%{$component}%" : '';
+        $shortNameNormalizedComponent = $allowShortNameSearch ? "%{$normalizedComponent}%" : '';
+
         return [
             $component,
             "{$component}.%",
             "%{$component}%",
             $normalizedComponent,
             "%{$normalizedComponent}%",
-            "%{$component}%",
+            $shortNameComponent,
             $normalizedComponent,
-            "%{$normalizedComponent}%",
-            "%{$component}%",
+            $shortNameNormalizedComponent,
+            $shortNameComponent,
             $normalizedComponent,
             "%{$normalizedComponent}%",
             $property,
@@ -251,11 +313,13 @@ class LoincCodeFinder implements Tool
         string $property,
     ): Collection {
         return $candidates->map(function (LoincCoreEntry $candidate) use ($system, $scale, $property): array {
+            $adjustedScore = $this->adjustedScore($candidate, $system, $scale, $property);
             $signals = array_values(array_filter([
                 ((int) ($candidate->getAttribute('relevance_score') ?? 0)) >= 100 ? 'exact_component_match' : null,
                 $property !== '' && $candidate->property === $property ? 'property_match' : null,
                 $system !== '' && $candidate->system === $system ? 'system_match' : null,
                 $scale !== '' && $candidate->scale_type === $scale ? 'scale_match' : null,
+                $this->isPreferredLabClass((string) $candidate->getAttribute('class')) ? 'preferred_lab_class' : null,
                 filled($candidate->short_name) ? 'has_short_name' : null,
                 filled($candidate->long_common_name) ? 'has_long_common_name' : null,
             ]));
@@ -271,7 +335,7 @@ class LoincCodeFinder implements Tool
                 'class' => $candidate->getAttribute('class'),
                 'method_type' => $candidate->method_type,
                 'time_aspect' => $candidate->time_aspect,
-                'relevance_score' => (int) ($candidate->getAttribute('relevance_score') ?? 0),
+                'relevance_score' => $adjustedScore,
                 'match_signals' => $signals,
             ], [
                 'loinc_num',
@@ -287,7 +351,179 @@ class LoincCodeFinder implements Tool
                 'relevance_score',
                 'match_signals',
             ]);
-        })->values();
+        })->sortByDesc('relevance_score')->values();
+    }
+
+    protected function observationProfilesFor(
+        string $normalizedComponent,
+        string $system,
+        string $scale,
+        string $property,
+        string $observedValue,
+    ): array {
+        $profiles = [];
+        $urineLikely = $this->looksLikeUrineObservation($observedValue);
+        $resolvedSystem = $system !== '' ? $system : ($urineLikely ? 'Urine' : '');
+        $resolvedScale = $scale !== '' ? $scale : 'Nom';
+
+        if (in_array($normalizedComponent, ['colore', 'color'], true)) {
+            $profiles[] = [
+                'component' => 'Observation',
+                'property' => $property !== '' ? $property : 'Color',
+                'system' => $resolvedSystem,
+                'scale' => $resolvedScale,
+            ];
+        }
+
+        if (in_array($normalizedComponent, ['aspetto', 'appearance'], true)) {
+            $profiles[] = [
+                'component' => 'Observation',
+                'property' => $property !== '' ? $property : 'Aper',
+                'system' => $resolvedSystem,
+                'scale' => $resolvedScale,
+            ];
+        }
+
+        if (in_array($normalizedComponent, ['limpidezza', 'torbidita', 'torbidità', 'clarity'], true)) {
+            $profiles[] = [
+                'component' => 'Clarity',
+                'property' => $property !== '' ? $property : 'Type',
+                'system' => $resolvedSystem,
+                'scale' => $resolvedScale,
+            ];
+        }
+
+        return $profiles;
+    }
+
+    protected function semanticProfilesFor(
+        string $component,
+        string $normalizedComponent,
+        string $system,
+        string $scale,
+        string $property,
+    ): array {
+        $profiles = [];
+        $resolvedScale = $scale !== '' ? $scale : 'Qn';
+        $resolvedSystem = in_array($system, ['', 'Bld/Plas'], true) ? 'Bld' : $system;
+
+        if ($this->looksLikeMeanPlateletVolume($component, $normalizedComponent)) {
+            $profiles[] = [
+                'component' => 'Platelet',
+                'property' => $property !== '' ? $property : 'EntMeanVol',
+                'system' => $resolvedSystem,
+                'scale' => $resolvedScale,
+            ];
+        }
+
+        return $profiles;
+    }
+
+    protected function adjustedScore(
+        LoincCoreEntry $candidate,
+        string $system,
+        string $scale,
+        string $property,
+    ): int {
+        $score = (int) ($candidate->getAttribute('relevance_score') ?? 0);
+        $class = (string) $candidate->getAttribute('class');
+
+        if ($this->isPreferredLabClass($class)) {
+            $score += 25;
+        }
+
+        if ($this->isDiscouragedClass($class)) {
+            $score -= 40;
+        }
+
+        if ($system === 'Urine' && $candidate->system === 'Urine') {
+            $score += 20;
+        }
+
+        if ($scale !== '' && $candidate->scale_type === $scale) {
+            $score += 5;
+        }
+
+        if ($property !== '' && $candidate->property === $property) {
+            $score += 8;
+        }
+
+        return $score;
+    }
+
+    protected function fetchProfileCandidates(array $profiles, bool $fallback): Collection
+    {
+        return collect($profiles)
+            ->flatMap(function (array $profile) use ($fallback) {
+                $normalizedComponent = $this->normalizeTerm($profile['component']);
+                $componentTokens = $this->extractSearchTokens($normalizedComponent);
+                $allowShortNameSearch = $this->shouldSearchShortName($profile['component'], $normalizedComponent);
+
+                $query = $fallback
+                    ? $this->buildFallbackQuery(
+                        normalizedComponent: $normalizedComponent,
+                        componentTokens: $componentTokens,
+                        system: $profile['system'],
+                        scale: $profile['scale'],
+                        property: $profile['property'],
+                        allowShortNameSearch: $allowShortNameSearch,
+                    )
+                    : $this->buildPrimaryQuery(
+                        component: $profile['component'],
+                        normalizedComponent: $normalizedComponent,
+                        componentTokens: $componentTokens,
+                        system: $profile['system'],
+                        scale: $profile['scale'],
+                        property: $profile['property'],
+                        allowShortNameSearch: $allowShortNameSearch,
+                    );
+
+                return $query->get();
+            })
+            ->values();
+    }
+
+    protected function isPreferredLabClass(string $class): bool
+    {
+        return in_array($class, ['UA', 'SPEC', 'CHEM', 'HEM/BC', 'MICRO'], true);
+    }
+
+    protected function isDiscouragedClass(string $class): bool
+    {
+        return in_array($class, ['EYE.CONTACT_LENS', 'H&P.HX', 'H&P.PX'], true);
+    }
+
+    protected function shouldSearchShortName(string $component, string $normalizedComponent): bool
+    {
+        if ($normalizedComponent === '') {
+            return false;
+        }
+
+        if (preg_match('/^[a-z]{2,4}$/', $normalizedComponent) === 1) {
+            return false;
+        }
+
+        return Str::length($normalizedComponent) >= 5 || Str::contains($component, [' ', '-', '/']);
+    }
+
+    protected function looksLikeMeanPlateletVolume(string $component, string $normalizedComponent): bool
+    {
+        return Str::contains($normalizedComponent, ['mpv', 'mean platelet volume', 'platelet mean volume', 'volume piastrinico'])
+            || (Str::contains($normalizedComponent, 'piastrin') && Str::contains($normalizedComponent, 'volume'));
+    }
+
+    protected function looksLikeUrineObservation(string $observedValue): bool
+    {
+        $normalizedValue = $this->normalizeTerm($observedValue);
+
+        return Str::contains($normalizedValue, [
+            'giallo paglierino',
+            'giallo citrino',
+            'ambrato',
+            'torbido',
+            'limpido',
+            'opalescente',
+        ]);
     }
 
     protected function normalizeTerm(string $value): string
@@ -327,6 +563,8 @@ class LoincCodeFinder implements Tool
                 ->required(),
             'property' => $schema->string()
                 ->description('Proprietà LOINC da privilegiare, es: MCnc, SCnc, ACnc, NCnc'),
+            'observed_value' => $schema->string()
+                ->description('Valore osservato del risultato, utile per inferire il dominio dell’osservazione'),
         ];
     }
 }
