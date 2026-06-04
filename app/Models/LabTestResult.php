@@ -19,6 +19,7 @@ class LabTestResult extends Model
         'loinc_status',
         'loinc_justification',
         'loinc_confidence_score',
+        'loinc_debug_payload',
         'numeric_value',
         'operator',
         'textual_value',
@@ -31,7 +32,8 @@ class LabTestResult extends Model
     protected function casts(): array
     {
         return [
-            'loinc_status' => LabTestResultLoincStatus::class
+            'loinc_status' => LabTestResultLoincStatus::class,
+            'loinc_debug_payload' => 'array',
         ];
     }
 

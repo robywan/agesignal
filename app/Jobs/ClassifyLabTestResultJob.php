@@ -69,8 +69,18 @@ class ClassifyLabTestResultJob implements ShouldBeUnique, ShouldQueue
 
     public function failed(?Throwable $exception): void
     {
+        $debugPayload = $this->labTestResult->loinc_debug_payload ?? [];
+
         $this->labTestResult->fill([
             'loinc_status' => LabTestResultLoincStatus::Failed,
+            'loinc_debug_payload' => array_merge($debugPayload, [
+                'job_failure' => [
+                    'class' => $exception ? $exception::class : null,
+                    'message' => $exception?->getMessage(),
+                    'file' => $exception?->getFile(),
+                    'line' => $exception?->getLine(),
+                ],
+            ]),
         ])->save();
     }
 }

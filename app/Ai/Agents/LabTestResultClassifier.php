@@ -51,6 +51,9 @@ class LabTestResultClassifier implements Agent, Conversational, HasMiddleware, H
                - system: campione biologico più probabile
                - scale: Qn per numeri, Ord o Nom per risultati qualitativi
                - property: proprietà osservata, se utile per discriminare i candidati
+               - observed_value: valore osservato originale, utile quando il nome dell'esame è generico
+               2a. Se il nome dell'esame è osservazionale e non un analita, per esempio Colore, Aspetto, Limpidezza o Torbidità, non cercare solo il termine letterale come componente.
+                   In questi casi privilegia concetti LOINC di osservazione come Observation o Clarity e usa property coerenti come Color, Aper o Type.
             3. Usa il tool una prima volta per ottenere i candidati.
             4. Se la prima ricerca è ambigua, puoi usare il tool una seconda e ultima volta con parametri affinati.
             5. Dopo la seconda ricerca, oppure già dopo la prima se hai candidati plausibili, devi scegliere il miglior codice disponibile e restituire il risultato finale.

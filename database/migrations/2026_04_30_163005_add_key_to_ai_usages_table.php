@@ -16,6 +16,7 @@ return new class extends Migration
             $table->renameColumn('thought_tokens', 'reasoning_tokens');
             $table->renameColumn('thought_token_cost', 'reasoning_token_cost');
             $table->renameColumn('description', 'agent');
+            $table->dropIndex(['subject_type', 'subject_id']);
             $table->dropColumn(['subject_type', 'subject_id']);
         });
     }
@@ -28,6 +29,7 @@ return new class extends Migration
         Schema::table('ai_usages', function (Blueprint $table) {
             $table->string('subject_type')->nullable()->after('id');
             $table->unsignedBigInteger('subject_id')->nullable()->after('subject_type');
+            $table->index(['subject_type', 'subject_id']);
             $table->renameColumn('agent', 'description');
             $table->renameColumn('reasoning_token_cost', 'thought_token_cost');
             $table->renameColumn('reasoning_tokens', 'thought_tokens');

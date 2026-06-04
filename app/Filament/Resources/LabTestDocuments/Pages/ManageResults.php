@@ -7,11 +7,11 @@ use App\Filament\Resources\LabTestDocuments\Actions\ClassifyResultsAction;
 use App\Filament\Resources\LabTestDocuments\LabTestDocumentResource;
 use App\Models\LabTestResult;
 use BackedEnum;
-use Dom\Text;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Infolists\Components\CodeEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Pages\ManageRelatedRecords;
 use Filament\Schemas\Components\Section;
@@ -22,6 +22,7 @@ use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Phiki\Grammar\Grammar;
 
 class ManageResults extends ManageRelatedRecords
 {
@@ -79,7 +80,7 @@ class ManageResults extends ManageRelatedRecords
                     ->label('LOINC Core Entry')
                     ->columnSpan(2)
                     ->state(fn (LabTestResult $record) => sprintf(
-                        '%s (%s%%)', 
+                        '%s (%s%%)',
                         $record->loincCoreEntry?->long_common_name,
                         $record->loinc_confidence_score * 100
                     )),
@@ -93,6 +94,18 @@ class ManageResults extends ManageRelatedRecords
                 TextEntry::make('loinc_justification')
                     ->label('LOINC mapping justification')
                     ->columnSpanFull(),
+                Section::make('LOINC classification debug payload')
+                    ->columnSpanFull()
+                    ->schema([
+                        CodeEntry::make('loinc_debug_payload')
+                            ->label('LOINC classification debug payload')
+                            ->hiddenLabel()
+                            ->columnSpanFull()
+                            ->grammar(Grammar::Json)
+                            ->copyable(),
+                    ])
+                    ->collapsible()
+                    ->collapsed(true),
             ]);
     }
 
@@ -121,16 +134,12 @@ class ManageResults extends ManageRelatedRecords
                 TextColumn::make('loincCoreEntry.short_name')
                     ->label('LOINC Core Entry')
                     ->state(fn (LabTestResult $record) => sprintf(
-                        '[%s] %s (%s)', 
-                        $record->loincCoreEntry?->loinc_num, 
+                        '[%s] %s (%s)',
+                        $record->loincCoreEntry?->loinc_num,
                         $record->loincCoreEntry?->short_name,
                         $record->loinc_confidence_score ? sprintf('%s%%', $record->loinc_confidence_score * 100) : null
                     ))
-                    ->searchable([
-                        'loincCoreEntry.short_name',
-                        'loincCoreEntry.long_name',
-                        'loincCoreEntry.loinc_num'
-                    ]),
+                    ->searchable(),
                 TextColumn::make('loinc_confidence_score')
                     ->label('Confidence')
                     ->state(fn (LabTestResult $record) => when($record->loinc_confidence_score, fn ($value) => $value * 100))
@@ -150,7 +159,7 @@ class ManageResults extends ManageRelatedRecords
             ->filtersLayout(FiltersLayout::AboveContent)
             ->deferFilters(false)
             ->recordActions([
-                ViewAction::make()
+                ViewAction::make(),
             ]);
     }
 }
