@@ -5,11 +5,9 @@ namespace App\Filament\Resources\LabTestDocuments\Resources\LabTestTables\Tables
 use App\Enums\LabTestResultRequestStatus;
 use App\Jobs\ProcessDocumentTable;
 use App\Models\LabTestTable;
-use Dom\Text;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -23,10 +21,12 @@ class LabTestTablesTable
             ->columns([
                 TextColumn::make('media.name')
                     ->label('File')
-                    ->state(fn (LabTestTable $record) => $record->media?->name . pathinfo($record->media?->file_name, PATHINFO_EXTENSION))
+                    ->state(fn (LabTestTable $record) => $record->media?->name.pathinfo($record->media?->file_name, PATHINFO_EXTENSION))
                     ->searchable(),
                 TextColumn::make('page_number')
+                    ->label('Pagina')
                     ->numeric()
+                    ->placeholder('—')
                     ->sortable(),
                 TextColumn::make('results_count')
                     ->label('Results')
@@ -49,9 +49,9 @@ class LabTestTablesTable
                         $record
                             ->forceFill(['request_status' => LabTestResultRequestStatus::Processing])
                             ->save();
-                        
+
                         ProcessDocumentTable::dispatch($record);
-                        
+
                         $action->success();
                     })
                     ->successNotificationTitle('Processo accodato'),
