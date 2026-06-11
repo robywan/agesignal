@@ -2,10 +2,10 @@
 
 namespace App\Jobs;
 
-use App\Actions\ExtractLabTestTables;
 use App\Enums\LabTestDocumentStatus;
 use App\Models\LabTestDocument;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Queue\Queueable;
 
 class ProcessDocumentJob implements ShouldQueue
@@ -22,14 +22,20 @@ class ProcessDocumentJob implements ShouldQueue
         protected LabTestDocument $document
     ) {}
 
-    public function handle(
-        ExtractLabTestTables $extractTablesAction
-    ): void {
+    public function handle(): void
+    {
         $this->document->fill([
             'status' => LabTestDocumentStatus::Pending,
         ])->save();
 
-        $tables = $extractTablesAction($this->document);
+        $tables = new Collection;
+
+        foreach ($this->document->getMedia('files') as $media) {
+            $tables->add($this->document->tables()->updateOrCreate(
+                ['media_id' => $media->id, 'page_number' => null],
+                []
+            ));
+        }
 
         if ($tables->isNotEmpty()) {
             $this->document->fill([
