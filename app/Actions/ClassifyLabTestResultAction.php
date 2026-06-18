@@ -11,6 +11,8 @@ use Throwable;
 
 class ClassifyLabTestResultAction
 {
+    protected const ESCALATION_MODEL = 'google/gemini-3.5-flash';
+
     public function __invoke(LabTestResult $testResult)
     {
         $usageKey = "lab-document/{$testResult->table->document_id}/result/{$testResult->id}/classification";
@@ -18,29 +20,25 @@ class ClassifyLabTestResultAction
             ->only(['name', 'unit_measure', 'value', 'reference_values', 'notes'])
             ->all();
 
-        try {
-            $response = new LabTestResultClassifier($usageKey)
-                ->prompt(json_encode($payload, JSON_THROW_ON_ERROR));
+        $firstResponse = $this->attemptClassification($testResult, $payload, $usageKey);
+        $firstResult = $firstResponse->toArray();
 
-        } catch (Throwable $throwable) {
-            $testResult->forceFill([
-                'loinc_debug_payload' => [
-                    'status' => 'exception',
-                    'input' => $payload,
-                    'exception' => [
-                        'class' => $throwable::class,
-                        'message' => $throwable->getMessage(),
-                        'file' => $throwable->getFile(),
-                        'line' => $throwable->getLine(),
-                    ],
-                ],
-            ])->save();
+        $escalated = false;
+        $response = $firstResponse;
+        $result = $firstResult;
 
-            throw $throwable;
+        if (empty($result['loinc_code'])) {
+            $escalated = true;
+            $response = $this->attemptClassification($testResult, $payload, $usageKey, self::ESCALATION_MODEL);
+            $result = $response->toArray();
         }
 
-        $result = $response->toArray();
-        $debugPayload = $this->buildDebugPayload($response, $payload);
+        $debugPayload = $this->buildDebugPayload(
+            response: $response,
+            payload: $payload,
+            escalated: $escalated,
+            firstResponse: $escalated ? $firstResponse : null,
+        );
 
         if (! empty($result['loinc_code'])) {
             $testResult->fill([
@@ -50,7 +48,6 @@ class ClassifyLabTestResultAction
                 'loinc_confidence_score' => $result['confidence_score'] ?? null,
                 'loinc_debug_payload' => $debugPayload,
             ]);
-
         } else {
             $testResult->fill([
                 'loinc_status' => LabTestResultLoincStatus::Unmapped,
@@ -63,10 +60,43 @@ class ClassifyLabTestResultAction
         return $response;
     }
 
-    protected function buildDebugPayload(StructuredAgentResponse $response, array $payload): array
-    {
-        return [
+    protected function attemptClassification(
+        LabTestResult $testResult,
+        array $payload,
+        string $usageKey,
+        ?string $model = null,
+    ): StructuredAgentResponse {
+        try {
+            return (new LabTestResultClassifier($usageKey))
+                ->prompt(json_encode($payload, JSON_THROW_ON_ERROR), model: $model);
+        } catch (Throwable $throwable) {
+            $testResult->forceFill([
+                'loinc_debug_payload' => [
+                    'status' => 'exception',
+                    'input' => $payload,
+                    'model' => $model,
+                    'exception' => [
+                        'class' => $throwable::class,
+                        'message' => $throwable->getMessage(),
+                        'file' => $throwable->getFile(),
+                        'line' => $throwable->getLine(),
+                    ],
+                ],
+            ])->save();
+
+            throw $throwable;
+        }
+    }
+
+    protected function buildDebugPayload(
+        StructuredAgentResponse $response,
+        array $payload,
+        bool $escalated,
+        ?StructuredAgentResponse $firstResponse,
+    ): array {
+        $debugPayload = [
             'status' => empty($response->toArray()['loinc_code']) ? 'unmapped' : 'mapped',
+            'escalated' => $escalated,
             'input' => $payload,
             'response_text' => $response->text,
             'structured_output' => $response->toArray(),
@@ -87,5 +117,15 @@ class ClassifyLabTestResultAction
                 ->values()
                 ->all(),
         ];
+
+        if ($escalated && $firstResponse !== null) {
+            $debugPayload['first_attempt'] = [
+                'structured_output' => $firstResponse->toArray(),
+                'steps' => $firstResponse->steps->count(),
+                'tool_calls' => $firstResponse->toolCalls->count(),
+            ];
+        }
+
+        return $debugPayload;
     }
 }
