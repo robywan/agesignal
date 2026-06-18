@@ -10,6 +10,7 @@ use Laravel\Ai\Attributes\MaxSteps;
 use Laravel\Ai\Attributes\MaxTokens;
 use Laravel\Ai\Attributes\Model;
 use Laravel\Ai\Attributes\Provider;
+use Laravel\Ai\Attributes\Temperature;
 use Laravel\Ai\Attributes\Timeout;
 use Laravel\Ai\Contracts\Agent;
 use Laravel\Ai\Contracts\Conversational;
@@ -26,8 +27,9 @@ use Laravel\Ai\Responses\StructuredAgentResponse;
  */
 #[Provider(Lab::OpenRouter)]
 #[Model('google/gemini-3.1-flash-lite')]
-#[MaxSteps(4)]
+#[MaxSteps(6)]
 #[MaxTokens(10000)]
+#[Temperature(0)]
 #[Timeout(300)]
 class LabTestResultClassifier implements Agent, Conversational, HasMiddleware, HasStructuredOutput, HasTools
 {

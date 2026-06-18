@@ -14,6 +14,7 @@ class LabTestResult extends Model
     use HasFactory;
 
     protected $fillable = [
+        'table_id',
         'name',
         'value',
         'unit_measure',

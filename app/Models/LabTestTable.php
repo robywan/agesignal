@@ -16,6 +16,7 @@ class LabTestTable extends Model
     use HasFactory;
 
     protected $fillable = [
+        'document_id',
         'media_id',
         'page_number',
         'markdown',
