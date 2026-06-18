@@ -6,7 +6,7 @@
 
 ## Project-Specific Notes
 
-- Keep the `<laravel-boost-guidelines>
+- Keep the `<laravel-boost-guidelines>`
 === foundation rules ===
 
 # Laravel Boost Guidelines
