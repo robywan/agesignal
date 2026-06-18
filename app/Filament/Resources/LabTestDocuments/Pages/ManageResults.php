@@ -4,6 +4,7 @@ namespace App\Filament\Resources\LabTestDocuments\Pages;
 
 use App\Enums\LabTestResultLoincStatus;
 use App\Filament\Resources\LabTestDocuments\Actions\ClassifyResultsAction;
+use App\Filament\Resources\LabTestDocuments\Actions\NormalizeResultsAction;
 use App\Filament\Resources\LabTestDocuments\LabTestDocumentResource;
 use App\Models\LabTestResult;
 use BackedEnum;
@@ -38,6 +39,7 @@ class ManageResults extends ManageRelatedRecords
     {
         return [
             ClassifyResultsAction::make(),
+            NormalizeResultsAction::make(),
         ];
     }
 
@@ -129,8 +131,11 @@ class ManageResults extends ManageRelatedRecords
                     ->searchable(),
                 TextColumn::make('loinc_status')
                     ->label('LOINC')
-                    ->badge()
-                    ->searchable(),
+                    ->badge(),
+                TextColumn::make('normalization_status')
+                    ->label('Norm.')
+                    ->badge(),
+                /*
                 TextColumn::make('loincCoreEntry.short_name')
                     ->label('LOINC Core Entry')
                     ->state(fn (LabTestResult $record) => sprintf(
@@ -147,6 +152,7 @@ class ManageResults extends ManageRelatedRecords
                     ->suffix('%')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+                */
             ])
             ->filters([
                 SelectFilter::make('loinc_status')

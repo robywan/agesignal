@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\LabTestDocuments\Resources\LabTestTables\RelationManagers;
 
 use App\Jobs\ClassifyLabTestResultJob;
+use App\Jobs\NormalizeLabTestResultJob;
 use Filament\Actions\Action;
 use Filament\Actions\AssociateAction;
 use Filament\Actions\BulkActionGroup;
@@ -119,6 +120,13 @@ class ResultsRelationManager extends RelationManager
                     ->requiresConfirmation()
                     ->action(fn ($record) => ClassifyLabTestResultJob::dispatch($record))
                     ->successNotificationTitle('Classificazione avviata'),
+                Action::make('normalize')
+                    ->label('Normalizza')
+                    ->icon(Heroicon::OutlinedAdjustmentsHorizontal)
+                    ->color('info')
+                    ->requiresConfirmation()
+                    ->action(fn ($record) => NormalizeLabTestResultJob::dispatch($record))
+                    ->successNotificationTitle('Normalizzazione avviata'),
                 DissociateAction::make(),
                 DeleteAction::make(),
             ])
