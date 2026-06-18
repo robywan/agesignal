@@ -21,8 +21,8 @@ use Override;
 /**
  * @method StructuredAgentResponse prompt(string $prompt, array $attachments = [], Lab|array|string|null $provider = null, ?string $model = null, ?int $timeout = null)
  */
-#[Provider(Lab::Gemini)]
-#[Model('gemini-3.1-flash-lite-preview')]
+#[Provider(Lab::OpenRouter)]
+#[Model('google/gemini-3.1-flash-lite')]
 #[Temperature(0)]
 #[MaxTokens(32000)]
 #[Timeout(300)]

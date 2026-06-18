@@ -24,8 +24,8 @@ use Laravel\Ai\Responses\StructuredAgentResponse;
 /**
  * @method StructuredAgentResponse prompt(string $prompt, array $attachments = [], Lab|array|string|null $provider = null, ?string $model = null, ?int $timeout = null)
  */
-#[Provider(Lab::Gemini)]
-#[Model('gemini-3.1-flash-lite-preview')]
+#[Provider(Lab::OpenRouter)]
+#[Model('google/gemini-3.1-flash-lite')]
 #[MaxSteps(4)]
 #[MaxTokens(10000)]
 #[Timeout(300)]
