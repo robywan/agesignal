@@ -20,6 +20,7 @@ use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -94,6 +95,20 @@ class ResultsRelationManager extends RelationManager
                     ->placeholder('-')
                     ->toggleable()
                     ->wrap(),
+                IconColumn::make('loinc_escalated')
+                    ->label('Escalation')
+                    ->boolean()
+                    ->trueIcon(Heroicon::OutlinedArrowTrendingUp)
+                    ->falseIcon(Heroicon::OutlinedCheckCircle)
+                    ->trueColor('warning')
+                    ->falseColor('gray')
+                    ->tooltip(fn ($state): string => match (true) {
+                        $state === true => 'Classificato con escalation al modello potenziato',
+                        $state === false => 'Classificato al primo tentativo',
+                        default => '-',
+                    })
+                    ->placeholder('-')
+                    ->toggleable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

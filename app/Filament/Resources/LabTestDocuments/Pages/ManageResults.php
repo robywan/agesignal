@@ -18,6 +18,7 @@ use Filament\Resources\Pages\ManageRelatedRecords;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\Filter;
@@ -132,6 +133,20 @@ class ManageResults extends ManageRelatedRecords
                 TextColumn::make('loinc_status')
                     ->label('LOINC')
                     ->badge(),
+                IconColumn::make('loinc_escalated')
+                    ->label('Escalation')
+                    ->boolean()
+                    ->trueIcon(Heroicon::OutlinedArrowTrendingUp)
+                    ->falseIcon(Heroicon::OutlinedCheckCircle)
+                    ->trueColor('warning')
+                    ->falseColor('gray')
+                    ->tooltip(fn ($state): string => match (true) {
+                        $state === true => 'Classificato con escalation al modello potenziato',
+                        $state === false => 'Classificato al primo tentativo',
+                        default => '-',
+                    })
+                    ->placeholder('-')
+                    ->toggleable(),
                 TextColumn::make('normalization_status')
                     ->label('Norm.')
                     ->badge(),

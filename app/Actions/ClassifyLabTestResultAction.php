@@ -50,11 +50,13 @@ class ClassifyLabTestResultAction
                 'loinc_status' => LabTestResultLoincStatus::Mapped,
                 'loinc_justification' => $result['justification'] ?? null,
                 'loinc_confidence_score' => $result['confidence_score'] ?? null,
+                'loinc_escalated' => $escalated,
                 'loinc_debug_payload' => $debugPayload,
             ]);
         } else {
             $testResult->fill([
                 'loinc_status' => LabTestResultLoincStatus::Unmapped,
+                'loinc_escalated' => $escalated,
                 'loinc_debug_payload' => $debugPayload,
             ]);
         }

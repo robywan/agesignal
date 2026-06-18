@@ -54,10 +54,6 @@ class ClassifyLabTestResultJob implements ShouldBeUnique, ShouldQueue
 
     public function handle(ClassifyLabTestResultAction $action): void
     {
-        if ($this->labTestResult->loinc_status === LabTestResultLoincStatus::Mapped) {
-            return; // Skip if already classified
-        }
-
         $this->labTestResult->fill([
             'loinc_status' => LabTestResultLoincStatus::Processing,
         ])->save();

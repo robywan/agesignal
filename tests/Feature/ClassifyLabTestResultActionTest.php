@@ -41,6 +41,7 @@ it('maps a result when the first attempt returns a loinc code', function () {
     expect($result->loinc_status)->toBe(LabTestResultLoincStatus::Mapped)
         ->and($result->loinc_num)->toBe('2093-3')
         ->and((float) $result->loinc_confidence_score)->toBe(0.95)
+        ->and($result->loinc_escalated)->toBeFalse()
         ->and($result->loinc_debug_payload['escalated'])->toBeFalse()
         ->and($result->loinc_debug_payload)->not->toHaveKey('first_attempt');
 
@@ -64,6 +65,7 @@ it('escalates to a stronger model when the first attempt returns no loinc code',
 
     expect($result->loinc_status)->toBe(LabTestResultLoincStatus::Mapped)
         ->and($result->loinc_num)->toBe('2093-3')
+        ->and($result->loinc_escalated)->toBeTrue()
         ->and($result->loinc_debug_payload['escalated'])->toBeTrue()
         ->and($result->loinc_debug_payload)->toHaveKey('first_attempt')
         ->and($callCount)->toBe(2);
@@ -80,6 +82,7 @@ it('marks a result as unmapped when both attempts return no loinc code', functio
 
     expect($result->loinc_status)->toBe(LabTestResultLoincStatus::Unmapped)
         ->and($result->loinc_num)->toBeNull()
+        ->and($result->loinc_escalated)->toBeTrue()
         ->and($result->loinc_debug_payload['escalated'])->toBeTrue()
         ->and($result->loinc_debug_payload['status'])->toBe('unmapped');
 });

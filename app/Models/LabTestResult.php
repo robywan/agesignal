@@ -24,6 +24,7 @@ class LabTestResult extends Model
         'loinc_status',
         'loinc_justification',
         'loinc_confidence_score',
+        'loinc_escalated',
         'loinc_debug_payload',
         'numeric_value',
         'operator',
@@ -40,6 +41,7 @@ class LabTestResult extends Model
         return [
             'loinc_status' => LabTestResultLoincStatus::class,
             'normalization_status' => LabTestResultNormalizationStatus::class,
+            'loinc_escalated' => 'boolean',
             'loinc_debug_payload' => 'array',
         ];
     }
