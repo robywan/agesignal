@@ -3,10 +3,13 @@
 - This project uses DDEV for local development.
 - Prefer running framework and tooling commands through DDEV, for example: `ddev artisan`, `ddev composer`, `ddev npm`, and `ddev php`.
 - When suggesting commands for this repository, assume the development environment is DDEV unless the user explicitly says otherwise.
+- This applies to Laravel Pint as well: always run it through DDEV, for example `ddev exec vendor/bin/pint --dirty --format agent`. Do not run `vendor/bin/pint` directly on the host.
 
 ## Project-Specific Notes
 
 - Keep the `<laravel-boost-guidelines>`
+
+<laravel-boost-guidelines>
 === foundation rules ===
 
 # Laravel Boost Guidelines

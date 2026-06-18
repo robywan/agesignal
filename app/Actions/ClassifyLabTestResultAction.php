@@ -13,6 +13,10 @@ class ClassifyLabTestResultAction
 {
     protected const ESCALATION_MODEL = 'google/gemini-3.5-flash';
 
+    public function __construct(
+        protected FlagDuplicateLabTestResultsAction $flagDuplicates,
+    ) {}
+
     public function __invoke(LabTestResult $testResult)
     {
         $usageKey = "lab-document/{$testResult->table->document_id}/result/{$testResult->id}/classification";
@@ -46,16 +50,22 @@ class ClassifyLabTestResultAction
                 'loinc_status' => LabTestResultLoincStatus::Mapped,
                 'loinc_justification' => $result['justification'] ?? null,
                 'loinc_confidence_score' => $result['confidence_score'] ?? null,
+                'loinc_escalated' => $escalated,
                 'loinc_debug_payload' => $debugPayload,
             ]);
         } else {
             $testResult->fill([
                 'loinc_status' => LabTestResultLoincStatus::Unmapped,
+                'loinc_escalated' => $escalated,
                 'loinc_debug_payload' => $debugPayload,
             ]);
         }
 
         $testResult->save();
+
+        if ($testResult->loinc_num) {
+            ($this->flagDuplicates)($testResult);
+        }
 
         return $response;
     }
