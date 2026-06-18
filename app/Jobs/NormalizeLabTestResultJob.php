@@ -3,7 +3,9 @@
 namespace App\Jobs;
 
 use App\Actions\NormalizeLabTestResultAction;
+use App\Enums\LabTestResultNormalizationStatus;
 use App\Models\LabTestResult;
+use DateTime;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -16,11 +18,7 @@ class NormalizeLabTestResultJob implements ShouldBeUnique, ShouldQueue
 {
     use Queueable;
 
-    public int $tries = 3;
-
-    public int $timeout = 300;
-
-    public int $backoff = 30;
+    public $timeout = 300; // 5 minutes
 
     public function __construct(
         protected LabTestResult $labTestResult
@@ -31,13 +29,15 @@ class NormalizeLabTestResultJob implements ShouldBeUnique, ShouldQueue
         return (string) $this->labTestResult->id;
     }
 
-    /**
-     * @return array<int, ThrottlesExceptions>
-     */
+    public function retryUntil(): DateTime
+    {
+        return now()->addMinutes(10)->toDateTime();
+    }
+
     public function middleware(): array
     {
         return [
-            (new ThrottlesExceptions(3, 5 * 60))
+            new ThrottlesExceptions(3, 5 * 60)
                 ->byJob()
                 ->backoff(1)
                 ->when(fn (Throwable $throwable) => in_array(get_class($throwable), [
@@ -49,10 +49,21 @@ class NormalizeLabTestResultJob implements ShouldBeUnique, ShouldQueue
 
     public function handle(NormalizeLabTestResultAction $action): void
     {
-        if ($this->labTestResult->numeric_value !== null || $this->labTestResult->textual_value !== null) {
+        if ($this->labTestResult->normalization_status === LabTestResultNormalizationStatus::Completed) {
             return; // Skip if already normalized
         }
 
+        $this->labTestResult->fill([
+            'normalization_status' => LabTestResultNormalizationStatus::Processing,
+        ])->save();
+
         $action($this->labTestResult);
+    }
+
+    public function failed(?Throwable $exception): void
+    {
+        $this->labTestResult->fill([
+            'normalization_status' => LabTestResultNormalizationStatus::Failed,
+        ])->save();
     }
 }

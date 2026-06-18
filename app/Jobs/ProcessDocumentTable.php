@@ -39,6 +39,7 @@ class ProcessDocumentTable implements ShouldQueue
 
         foreach ($results as $result) {
             ClassifyLabTestResultJob::dispatch($result);
+            NormalizeLabTestResultJob::dispatch($result);
         }
     }
 
