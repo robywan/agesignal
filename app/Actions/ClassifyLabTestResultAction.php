@@ -13,6 +13,10 @@ class ClassifyLabTestResultAction
 {
     protected const ESCALATION_MODEL = 'google/gemini-3.5-flash';
 
+    public function __construct(
+        protected FlagDuplicateLabTestResultsAction $flagDuplicates,
+    ) {}
+
     public function __invoke(LabTestResult $testResult)
     {
         $usageKey = "lab-document/{$testResult->table->document_id}/result/{$testResult->id}/classification";
@@ -56,6 +60,10 @@ class ClassifyLabTestResultAction
         }
 
         $testResult->save();
+
+        if ($testResult->loinc_num) {
+            ($this->flagDuplicates)($testResult);
+        }
 
         return $response;
     }

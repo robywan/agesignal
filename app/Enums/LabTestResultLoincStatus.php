@@ -11,6 +11,7 @@ enum LabTestResultLoincStatus: string implements HasColor
     case Mapped = 'mapped';
     case Unmapped = 'unmapped';
     case Failed = 'failed';
+    case Duplicate = 'duplicate';
 
     public function getColor(): ?string
     {
@@ -19,6 +20,7 @@ enum LabTestResultLoincStatus: string implements HasColor
             self::Mapped => 'success',
             self::Unmapped => 'warning',
             self::Failed => 'danger',
+            self::Duplicate => 'gray',
         };
     }
 }

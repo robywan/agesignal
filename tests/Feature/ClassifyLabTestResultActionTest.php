@@ -34,7 +34,7 @@ it('maps a result when the first attempt returns a loinc code', function () {
 
     $result = LabTestResult::factory()->create();
 
-    (new ClassifyLabTestResultAction)($result);
+    app(ClassifyLabTestResultAction::class)($result);
 
     $result->refresh();
 
@@ -58,7 +58,7 @@ it('escalates to a stronger model when the first attempt returns no loinc code',
 
     $result = LabTestResult::factory()->create();
 
-    (new ClassifyLabTestResultAction)($result);
+    app(ClassifyLabTestResultAction::class)($result);
 
     $result->refresh();
 
@@ -74,7 +74,7 @@ it('marks a result as unmapped when both attempts return no loinc code', functio
 
     $result = LabTestResult::factory()->create();
 
-    (new ClassifyLabTestResultAction)($result);
+    app(ClassifyLabTestResultAction::class)($result);
 
     $result->refresh();
 
@@ -91,7 +91,7 @@ it('saves an exception payload and rethrows when the agent throws', function () 
 
     $result = LabTestResult::factory()->create();
 
-    expect(fn () => (new ClassifyLabTestResultAction)($result))
+    expect(fn () => app(ClassifyLabTestResultAction::class)($result))
         ->toThrow(RuntimeException::class, 'Provider overloaded');
 
     $result->refresh();
