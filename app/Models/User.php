@@ -3,7 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use App\Enums\Sex;
+use App\Enums\Gender;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -16,7 +16,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 
-#[Fillable(['name', 'email', 'password', 'birthdate', 'sex', 'height_cm', 'weight_kg'])]
+#[Fillable(['name', 'email', 'password', 'birthdate', 'gender', 'height_cm', 'weight_kg'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -40,7 +40,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'birthdate' => 'date',
-            'sex' => Sex::class,
+            'gender' => Gender::class,
             'height_cm' => 'integer',
             'weight_kg' => 'decimal:2',
         ];

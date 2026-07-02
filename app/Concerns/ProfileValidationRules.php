@@ -2,7 +2,7 @@
 
 namespace App\Concerns;
 
-use App\Enums\Sex;
+use App\Enums\Gender;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
@@ -27,7 +27,7 @@ trait ProfileValidationRules
                 Rule::unique('users')->ignore($ignoreUserId),
             ],
             'birthdate' => ['nullable', 'date', 'before:today', 'after:1900-01-01'],
-            'sex' => ['nullable', new Enum(Sex::class)],
+            'gender' => ['nullable', new Enum(Gender::class)],
             'height_cm' => ['nullable', 'integer', 'min:50', 'max:260'],
             'weight_kg' => ['nullable', 'numeric', 'min:20', 'max:400'],
         ];

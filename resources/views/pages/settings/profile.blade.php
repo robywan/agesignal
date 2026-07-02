@@ -1,7 +1,7 @@
 <?php
 
 use App\Concerns\ProfileValidationRules;
-use App\Enums\Sex;
+use App\Enums\Gender;
 use Flux\Flux;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Facades\Auth;
@@ -19,7 +19,7 @@ new #[Title('Profilo')] class extends Component
 
     public ?string $birthdate = null;
 
-    public ?string $sex = null;
+    public ?string $gender = null;
 
     public ?int $height_cm = null;
 
@@ -36,7 +36,7 @@ new #[Title('Profilo')] class extends Component
         $this->name = $user->name;
         $this->email = $user->email;
         $this->birthdate = $user->birthdate?->format('Y-m-d');
-        $this->sex = $user->sex?->value;
+        $this->gender = $user->gender?->value;
         $this->height_cm = $user->height_cm;
         $this->weight_kg = $user->weight_kg !== null ? (float) $user->weight_kg : null;
     }
@@ -47,7 +47,7 @@ new #[Title('Profilo')] class extends Component
 
         // Normalize empty inputs so nullable validation accepts them
         $this->birthdate = $this->birthdate ?: null;
-        $this->sex = $this->sex ?: null;
+        $this->gender = $this->gender ?: null;
 
         $validated = $this->validate($this->profileRules($user->id));
 
@@ -128,9 +128,9 @@ new #[Title('Profilo')] class extends Component
      * @return array<string, string>
      */
     #[Computed]
-    public function sexOptions(): array
+    public function genderOptions(): array
     {
-        return Sex::options();
+        return Gender::options();
     }
 
     #[Computed]
@@ -174,14 +174,14 @@ new #[Title('Profilo')] class extends Component
             <flux:separator text="{{ __('Profilo sanitario') }}" />
 
             <flux:text size="sm" class="text-text-secondary">
-                {{ __('Servono per contestualizzare i tuoi valori (range di riferimento per fascia di età/sesso, calcolo BMI). Puoi cambiarli quando vuoi.') }}
+                {{ __('Servono per contestualizzare i tuoi valori (range di riferimento per fascia di età/genere, calcolo BMI). Puoi cambiarli quando vuoi.') }}
             </flux:text>
 
             <flux:input wire:model="birthdate" :label="__('Data di nascita')" type="date" autocomplete="bday" />
 
-            <flux:select wire:model="sex" :label="__('Sesso')">
+            <flux:select wire:model="gender" :label="__('Genere')">
                 <flux:select.option value="">{{ __('Seleziona…') }}</flux:select.option>
-                @foreach ($this->sexOptions as $value => $label)
+                @foreach ($this->genderOptions as $value => $label)
                     <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
                 @endforeach
             </flux:select>

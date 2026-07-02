@@ -52,7 +52,7 @@
             <flux:separator text="{{ __('Profilo sanitario · facoltativo') }}" />
 
             <flux:text size="sm" class="text-text-secondary">
-                {{ __('Servono per contestualizzare i tuoi valori (es. range di riferimento per fascia di età/sesso). Puoi compilarli ora oppure dalle impostazioni del profilo.') }}
+                {{ __('Servono per contestualizzare i tuoi valori (es. range di riferimento per fascia di età/genere). Puoi compilarli ora oppure dalle impostazioni del profilo.') }}
             </flux:text>
 
             <flux:input
@@ -64,12 +64,12 @@
             />
 
             <flux:select
-                name="sex"
-                :label="__('Sesso')"
+                name="gender"
+                :label="__('Genere')"
                 :placeholder="__('Seleziona…')"
             >
-                @foreach (\App\Enums\Sex::options() as $value => $label)
-                    <flux:select.option value="{{ $value }}" :selected="old('sex') === $value">{{ $label }}</flux:select.option>
+                @foreach (\App\Enums\Gender::options() as $value => $label)
+                    <flux:select.option value="{{ $value }}" :selected="old('gender') === $value">{{ $label }}</flux:select.option>
                 @endforeach
             </flux:select>
 

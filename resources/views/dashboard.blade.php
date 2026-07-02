@@ -7,7 +7,7 @@
 
     $activeConditions = $patient->activeConditions()->orderBy('name')->get();
 
-    $profileComplete = $patient->birthdate && $patient->sex && $patient->height_cm && $patient->weight_kg;
+    $profileComplete = $patient->birthdate && $patient->gender && $patient->height_cm && $patient->weight_kg;
 
     $bmi = $patient->bmi;
     $bmiLabel = match (true) {
@@ -37,8 +37,8 @@
                             if ($patient->age) {
                                 $bits[] = __(':n anni', ['n' => $patient->age]);
                             }
-                            if ($patient->sex) {
-                                $bits[] = $patient->sex->label();
+                            if ($patient->gender) {
+                                $bits[] = $patient->gender->label();
                             }
                             if ($bmi !== null) {
                                 $bits[] = 'BMI '.number_format($bmi, 1).' · '.$bmiLabel;
@@ -66,7 +66,7 @@
                             {{ __('Completa il tuo profilo sanitario') }}
                         </div>
                         <div class="text-body" style="color: var(--color-status-warn-text); opacity: 0.85;">
-                            {{ __('Età, sesso, altezza e peso ci servono per applicare range di riferimento corretti ai tuoi parametri.') }}
+                            {{ __('Età, genere, altezza e peso ci servono per applicare range di riferimento corretti ai tuoi parametri.') }}
                         </div>
                     </div>
                     <flux:link :href="route('profile.edit')" wire:navigate class="shrink-0">
