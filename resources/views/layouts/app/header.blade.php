@@ -15,6 +15,7 @@
                 </flux:navbar.item>
             </flux:navbar>
 
+            {{--
             <flux:spacer />
 
             <flux:navbar class="me-1.5 space-x-0.5 rtl:space-x-reverse py-0!">
@@ -40,6 +41,7 @@
                     />
                 </flux:tooltip>
             </flux:navbar>
+            --}}
 
             <x-desktop-user-menu />
         </flux:header>
@@ -59,6 +61,7 @@
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 
+            {{-- 
             <flux:spacer />
 
             <flux:sidebar.nav>
@@ -69,6 +72,7 @@
                     {{ __('Documentation') }}
                 </flux:sidebar.item>
             </flux:sidebar.nav>
+             --}}
         </flux:sidebar>
 
         {{ $slot }}
