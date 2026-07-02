@@ -1,13 +1,17 @@
 <?php
 
+namespace App\Livewire\Pages\Documents;
+
+use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Title('Referti')] class extends Component {
+#[Title('Referti')]
+class Index extends Component
+{
     #[Computed]
     public function documents(): Collection
     {
@@ -20,4 +24,4 @@ new #[Title('Referti')] class extends Component {
             ->latest()
             ->get();
     }
-}; 
+}

@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Livewire\Pages\Trend;
+
 use App\Models\LabTestDocument;
 use App\Models\LabTestResult;
 use App\Models\User;
@@ -9,7 +11,8 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Title('Andamento storico')] class extends Component
+#[Title('Andamento storico')]
+class Index extends Component
 {
     public string $filter = 'all';
 
@@ -231,4 +234,4 @@ new #[Title('Andamento storico')] class extends Component
     {
         return mb_strtolower(trim((string) $name)).'|'.mb_strtolower(trim((string) $unit));
     }
-};
+}

@@ -1,10 +1,13 @@
 <?php
 
+namespace App\Livewire\Settings\TwoFactor;
+
 use Laravel\Fortify\Actions\GenerateNewRecoveryCodes;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-new class extends Component {
+class RecoveryCodes extends Component
+{
     #[Locked]
     public array $recoveryCodes = [];
 
@@ -43,4 +46,4 @@ new class extends Component {
             }
         }
     }
-}; 
+}

@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Livewire\Pages\Documents;
+
 use App\Enums\LabTestDocumentStatus;
 use App\Jobs\ProcessDocumentJob;
 use App\Models\User;
@@ -11,7 +13,9 @@ use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 
-new #[Title('Nuovo referto')] class extends Component {
+#[Title('Nuovo referto')]
+class Create extends Component
+{
     use WithFileUploads;
 
     public ?string $testDate = null;
@@ -52,4 +56,4 @@ new #[Title('Nuovo referto')] class extends Component {
 
         $this->redirect(route('documents.index', absolute: false), navigate: true);
     }
-}; 
+}

@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Livewire\Pages\Dashboard;
+
 use App\Models\AiUsage;
 use App\Models\LabTestDocument;
 use App\Models\LabTestResult;
@@ -15,7 +17,8 @@ use Prism\Prism\Facades\Prism;
 use Prism\Prism\ValueObjects\Messages\AssistantMessage;
 use Prism\Prism\ValueObjects\Messages\UserMessage;
 
-new #[Title('Dashboard')] class extends Component
+#[Title('Dashboard')]
+class Index extends Component
 {
     public ?int $selectedDocumentId = null;
 
@@ -468,4 +471,4 @@ new #[Title('Dashboard')] class extends Component
             default => null,
         };
     }
-};
+}
